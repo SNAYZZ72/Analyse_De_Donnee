@@ -20,55 +20,90 @@ clean_data <- function(file_name) {
   }
   data <- read.csv(data_path, header = TRUE, sep = ",", stringsAsFactors = FALSE, encoding = "UTF-8")
 
-  # Supprimer les lignes contenant aucun caractère dans la colonne sexe
-  data <- data[nchar(data$sexe) > 0, ]
+  # remplacer tr<e8>s longue par tres longue dans la colonne longueur
+  if("longueur" %in% names(data)) {
+    data <- data %>% mutate(
+      longueur = str_replace(longueur, "très longue", "tres longue")
+    )
+  }
 
-  # Transformer "Homme" et "Masculin" en "H" dans la colonne sexe
-  data$sexe <- gsub("Homme|Masculin", "M", data$sexe)
+  #remplacer Hyunda<ef> par Hyundai dans la colonne marque
+  if("marque" %in% names(data)) {
+    data <- data %>% mutate(
+      marque = str_replace(marque, "Hyundaï", "Hyundai")
+    )
+  }
 
-  # Transformer "Femme" et "Feminin" en "F" dans la colonne sexe
-  data$sexe <- gsub("Femme|Feminin", "F", data$sexe)
+  # remplacer célibatire par celibatire dans la colonne situationFamiliale
+  # remplacer Marié(e) par Marie(e) dans la colonne situationFamiliale
+  # remplacer Divorcée par Divorcee dans la colonne situationFamiliale
+    if("situationFamiliale" %in% names(data)) {
+        data <- data %>% mutate(
+            situationFamiliale = str_replace(situationFamiliale, "Célibataire", "celibatire"),
+            situationFamiliale = str_replace(situationFamiliale, "Marié(e)", "Marie(e)"),
+            situationFamiliale = str_replace(situationFamiliale, "Divorcée", "Divorcee")
+        )
+    }
 
-  # Supprimer les lignes qui ne contiennent pas F ou H dans la colonne sexe
-  # data <- data[data$sexe %in% c("F", "M"), ]
 
-  # Supprimer les ligne  avec des valeurs aberrantes dans la colonne Age
-  data <- data[data$age >= 18 & data$age <= 84, ]
+    if("age" %in% names(data)) {
+      data <- data %>% filter(age >= 18 & age <= 84)
+    }
 
-  # Supprimer les lignes avec des valeurs aberrantes dans la colonne Taux  (544 et 74185)
-  data <- data[data$taux >= 544 & data$taux <= 74185, ]
+    if("taux" %in% names(data)) {
+        data <- data %>% filter(taux >= 544 & taux <= 74185)
+    }
 
-  # Supprimer les lignes avec des valeurs aberrantes dans la colonne NbEnfantsAcharge [0, 4]
-  data <- data[data$nbEnfantsAcharge >= 0 & data$nbEnfantsAcharge <= 4, ]
+    if("nbEnfantsAcharge" %in% names(data)) {
+        data <- data %>% filter(nbEnfantsAcharge >= 0 & nbEnfantsAcharge <= 4)
+    }
 
-  # Supprimer les lignes avec des valeurs ne contenant pas de caractères dans toutes la colonne 2emeVoiture
-  data <- data[nchar(data$`X2emeVoiture`) > 0, ]
 
-  # Supprimer les lignes avec des valeurs Immatriculation qui ne corresponde pas à un format valide au format « 9999 AA 99 »
-  data <- data[str_detect(data$immatriculation, "^[0-9]{4} [A-Z]{2} [0-9]{2}$"), ]
+    if("2eme voiture" %in% names(data)) {
+        data <- data %>% filter(nchar("X2eme.voiture") > 0)
+    }
 
-  # Supprimer les lignes avec des valeurs ne contenant pas un prix 7500, 101300] dans la colonne Prix
-  data <- data[data$prix >= 7500 & data$prix <= 101300, ]
+    if("immatriculation" %in% names(data)) {
+        data <- data %>% filter(str_detect(immatriculation, "^[0-9]{4} [A-Z]{2} [0-9]{2}$"))
+    }
 
-  # Supprimer les lignes avec des valeurs ne contenant pas une Puissance  en chevaux Din [55, 507]
-  data <- data[data$puissance >= 55 & data$puissance <= 507, ]
+    if("marque" %in% names(data)) {
+        data <- data %>% filter(nchar(marque) > 0)
+    }
 
-  # changement de <e8> par e  pour (tres longue) dans la colonne longueur
-  data$longueur <- gsub("<e8>", "e", data$longueur)
+    if("puissance" %in% names(data)) {
+        data <- data %>% filter(puissance >= 55 & puissance <= 507)
+    }
+
+    if("prix" %in% names(data)) {
+        data <- data %>% filter(prix >= 7500 & prix <= 101300)
+    }
+
+
+    if("sexe" %in% names(data)) {
+      data <- data %>% mutate(
+        sexe = case_when(
+          sexe %in% c("Homme", "Masculin") ~ "M",
+          sexe %in% c("Femme", "Féminin") ~ "F",
+          TRUE ~ sexe
+        )
+      ) %>%
+        filter(nchar(sexe) > 0, sexe %in% c("F", "M"))
+    }
 
 
   # Sauvegarde du fichier nettoyé
   cleaned_file_name <- gsub(".csv", "_clean.csv", file_name)
   write.csv(data, file.path(chemin_data, cleaned_file_name), row.names = FALSE)
 
-  message("Nettoyage terminé pour ", file_name)
+  message("Nettoyage termine pour ", file_name)
 }
 
 # Liste des fichiers à nettoyer
-files_to_clean <- c("Clients_7.csv", "Clients_12.csv", "Immatriculations.csv", "Marketing.csv","Catalogue.csv")
+files_to_clean <- c("Catalogue.csv", "Immatriculations.csv", "Clients_7.csv", "Clients_12.csv", "Marketing.csv","Catalogue.csv")
 
 # Application du nettoyage
 lapply(files_to_clean, clean_data)
 
-message("Nettoyage terminé pour tous les fichiers spécifiques.")
+message("Nettoyage termine pour tous les fichiers specifiques.")
 
