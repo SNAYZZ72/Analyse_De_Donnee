@@ -42,11 +42,21 @@ clean_data <- function(file_name) {
 
 # Fonction pour valider et corriger les données
 validate_and_correct_data <- function(data, file_name) {
-  # Corrections pour la colonne Sexe
-  if("sexe" %in% colnames(data)) {
-    data$sexe <- ifelse(grepl("masculin|homme", data$Sexe), "M",
-                        ifelse(grepl("femme|féminin", data$Sexe), "F", data$Sexe))
+  if (file_name %in% names(specifications)) {
+    spec <- specifications[[file_name]]
+    for (col in names(spec)) {
+      if (is.function(spec[[col]])) {
+        data <- data[spec[[col]](data[[col]]), ]
+      } else {
+        data <- data[data[[col]] %in% spec[[col]], ]
+      }
+    }
+  } else {
+    message("Aucune spécification de nettoyage spécifique pour ", file_name)
   }
+  return(data)
+}
+
   # Spécifications pour chaque fichier
   specifications <- list(
     "Catalogue.csv" = list(
@@ -96,8 +106,6 @@ validate_and_correct_data <- function(data, file_name) {
       "2eme voiture" = c(TRUE, FALSE)
     ),
     )
-    return(data)
-}
 
 
 # Liste des fichiers à nettoyer
