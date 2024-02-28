@@ -27,6 +27,7 @@ ggplot(donnees, aes(x = factor(1), y = variable_a_examiner)) +
     labs(title = "Boîte à moustaches de la variable", x = "", y = "Valeur")
 
 
+
 # Nuage de points pour examiner les relations entre deux variables
 ggplot(donnees, aes(x = variable_x, y = variable_y)) +
   geom_point() +
