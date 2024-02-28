@@ -21,56 +21,84 @@ clean_data <- function(file_name) {
   }
   data <- read.csv(data_path, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
-  # Corrections spécifiques
-  corrections <- list(
-    "Catalogue.csv" = list(
-      longueur = c("tr<e8>s longue", "tres longue"),
-      marque = c("Hyunda<ef>", "Hyundai")
-    ),
-    "Immatriculations.csv" = list(
-      longueur = c("tr<e8>s longue", "tres longue"),
-      marque = c("Hyunda<ef>", "Hyundai")
-    ),
-    "Marketing.csv" = list(
-      situationFamiliale = c("C<e9>libataire", "Celibataire", "Seule", "Celibataire", "Marié(e)", "Marie")
-    ),
-    "client_7.csv" = list(
-      sexe = c("Masculin|Homme", "M", "Féminin|Femme", "F", "\\?|N/D", "Indéterminé")
-    ),
-    "client_12.csv" = list(
-      sexe = c("Masculin|Homme", "M", "Féminin|Femme", "F", "\\?|N/D", "Indéterminé")
-    )
-  )
+  # Backup du fichier original
+  file.copy(data_path, gsub(".csv", "_backup.csv", data_path))
 
-  # Mise à jour des corrections pour la colonne sexe avec une expression régulière
-  if (file_name %in% names(corrections)) {
-    corrections_sexe <- c("Masculin|Homme" = "M", "Féminin|Femme" = "F", "\\?|N/D" = "Indéterminé")
-    for (pattern in names(corrections_sexe)) {
-      data$sexe <- ifelse(grepl(pattern, data$sexe), corrections_sexe[pattern], data$sexe)
-    }
-  }
+  # Normalisation des chaînes de caractères et suppression des espaces superflus
+  data <- data.frame(lapply(data, function(x) if (is.character(x)) trimws(tolower(x)) else x))
 
-  # Autres corrections spécifiques
-  for (var in names(corrections[[file_name]])) {
-    if (var != "sexe") {
-      data[[var]] <- gsub(corrections[[file_name]][[var]][1], corrections[[file_name]][[var]][2], data[[var]])
-    }
-  }
+  # Application des corrections spécifiques
+  data <- validate_and_correct_data(data, file_name)
 
-  # Suppression des lignes avec des valeurs manquantes ou des points d'interrogation
-  data <- data[complete.cases(data), ]
-  data <- data[!apply(data, 1, function(row) any(row == "?")), ]
-  # Suppression des lignes contenant uniquement des tirets
-  data <- data[!apply(data, 1, function(row) all(row == "-")), ]
   # Suppression des duplicatas
-  data <- unique(data)
+  data <- data %>% distinct()
 
-  # Modification de la partie qui sauvegarde le fichier nettoyé
-  cleaned_file_name <- gsub(".csv", "_cleaner_file.csv", file_name)
+  # Sauvegarde du fichier nettoyé
+  cleaned_file_name <- gsub(".csv", "_clean.csv", file_name)
   write.csv(data, file.path(chemin_data, cleaned_file_name), row.names = FALSE)
 
   message("Nettoyage terminé pour ", file_name)
 }
+
+# Fonction pour valider et corriger les données
+validate_and_correct_data <- function(data, file_name) {
+  # Corrections pour la colonne Sexe
+  if("sexe" %in% colnames(data)) {
+    data$sexe <- ifelse(grepl("masculin|homme", data$Sexe), "M",
+                        ifelse(grepl("femme|féminin", data$Sexe), "F", data$Sexe))
+  }
+  # Spécifications pour chaque fichier
+  specifications <- list(
+    "Catalogue.csv" = list(
+      Marque = c("Audi", "BMW", "Dacia", "Daihatsu", "Fiat", "Ford", "Honda", "Hyundaï", "Jaguar", "Kia", "Lancia", "Mercedes", "Mini", "Nissan", "Peugeot", "Renault", "Saab", "Seat", "Skoda", "Volkswagen", "Volvo"),
+      Puissance = c(55, 507),
+      Longueur = c("courte", "moyenne", "longue", "très longue"),
+      NbPlaces = c(5, 7),
+      NbPortes = c(3, 5),
+      Couleur = c("blanc", "bleu", "gris", "noir", "rouge"),
+      Occasion = c(TRUE, FALSE),
+      Prix = c(7500, 101300)
+    ),
+    "Immatriculations.csv" = list(
+      Immatriculation = function(x) grepl("^\\d{4} [A-Z]{2} \\d{2}$", x),
+      Marque = c("Audi", "BMW", "Dacia", "Daihatsu", "Fiat", "Ford", "Honda", "Hyundaï", "Jaguar", "Kia", "Lancia", "Mercedes", "Mini", "Nissan", "Peugeot", "Renault", "Saab", "Seat", "Skoda", "Volkswagen", "Volvo"),
+      Nom = "Définir selon les noms valides de modèles de véhicules",
+      Puissance = c(55, 507),
+      Longueur = c("courte", "moyenne", "longue", "très longue"),
+      NbPlaces = c(5, 7),
+      NbPortes = c(3, 5),
+      Couleur = c("blanc", "bleu", "gris", "noir", "rouge"),
+      Occasion = c(TRUE, FALSE),
+      Prix = c(7500, 101300)
+    ),
+    "Marketing.csv" = list(
+      Age = c(18, 84),
+      Sexe = c("M", "F"),
+      Taux = c(544, 74185),
+      SituationFamiliale = c("Célibataire", "Divorcée", "En Couple", "Marié(e)", "Seul", "Seule"),
+      NbEnfantsAcharge = c(0, 4),
+      "2eme voiture" = c(TRUE, FALSE)
+    ),
+    "Clients_7.csv" = list(
+      Age = c(18, 84),
+      Sexe = c("M", "F"),
+      Taux = c(544, 74185),
+      SituationFamiliale = c("Célibataire", "Divorcée", "En Couple", "Marié(e)", "Seul", "Seule"),
+      NbEnfantsAcharge = c(0, 4),
+      "2eme voiture" = c(TRUE, FALSE)
+    ),
+    "Clients_12.csv" = list(
+      Age = c(18, 84),
+      Sexe = c("M", "F"),
+      Taux = c(544, 74185),
+      SituationFamiliale = c("Célibataire", "Divorcée", "En Couple", "Marié(e)", "Seul", "Seule"),
+      NbEnfantsAcharge = c(0, 4),
+      "2eme voiture" = c(TRUE, FALSE)
+    ),
+    )
+    return(data)
+}
+
 
 # Liste des fichiers à nettoyer
 files_to_clean <- c("Catalogue.csv", "Immatriculations.csv", "Marketing.csv", "Clients_7.csv", "Clients_12.csv", "CO2.csv")
@@ -79,3 +107,4 @@ files_to_clean <- c("Catalogue.csv", "Immatriculations.csv", "Marketing.csv", "C
 lapply(files_to_clean, clean_data)
 
 message("Nettoyage terminé pour tous les fichiers spécifiques.")
+
