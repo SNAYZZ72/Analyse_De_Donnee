@@ -1,28 +1,30 @@
-# # Chargement des bibliothèques nécessaires
-# library(dplyr)
-# library(ggplot2)
-# # Ajoutez d'autres bibliothèques selon vos besoins
-#
-# # Chemin vers les scripts
-# path_to_scripts <- "scripts/"
-#
-# # Analyse exploratoire des données
+#Chargement des bibliothèques nécessaires
+library(tidyverse) # Pour la manipulation et la visualisation des données
+library(readr)     # Pour lire les fichiers CSV
+library(dplyr)     # Pour la manipulation des données
+library(ggplot2)   # Pour la visualisation des données
 
-#
-# # Identification et catégorisation des véhicules
+# Chemin vers les scripts
+chemin_scripts <- "scripts/"
+chemin_data <- "data/"
 
-#
-# # Application des catégories et fusion des données
+# Fonction de nettoyage générique
+source(paste0(chemin_scripts, "00_cleaning_data.R"))
 
-#
-# # Modélisation - Création du modèle de classification
+# 1. Analyse exploratoire des données
+source(paste0(chemin_scripts, "01_analyse_exploratoire.R"))
 
-#
-# # Évaluation du modèle
+# 2. Identification des catégories de véhicules
+source(paste0(chemin_scripts, "02_identification_categories.R"))
 
-#
-# # Application aux données marketing
+# 3. Application des catégories aux données d’immatriculations
+source(paste0(chemin_scripts, "03_application_categories.R"))
 
-#
-# # Conclusion et génération de rapport
-# source(paste0(path_to_scripts, "07_rapport.R"))
+# 4. Fusion des données Clients et Immatriculations
+source(paste0(chemin_scripts, "04_fusion_donnees.R"))
+
+# 5. Modélisation - Création du modèle de classification
+source(paste0(chemin_scripts, "05_model_classification.R"))
+
+# 6. Application du modèle aux données Marketing
+source(paste0(chemin_scripts, "06_application_modele_marketing.R"))
