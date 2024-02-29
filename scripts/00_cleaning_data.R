@@ -37,12 +37,14 @@ clean_data <- function(file_name) {
   # remplacer célibatire par celibatire dans la colonne situationFamiliale
   # remplacer Marié(e) par Marie(e) dans la colonne situationFamiliale
   # remplacer Divorcée par Divorcee dans la colonne situationFamiliale
+  # Supprimer les lignes avec des valeurs manquantes ou "N/D" dans la colonne situationFamiliale
     if("situationFamiliale" %in% names(data)) {
         data <- data %>% mutate(
             situationFamiliale = str_replace(situationFamiliale, "Célibataire", "celibatire"),
             situationFamiliale = str_replace(situationFamiliale, "Marié(e)", "Marie(e)"),
             situationFamiliale = str_replace(situationFamiliale, "Divorcée", "Divorcee")
-        )
+        ) %>%
+            filter(nchar(situationFamiliale) > 0, situationFamiliale != "N/D")
     }
 
 
