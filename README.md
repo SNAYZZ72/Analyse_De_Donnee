@@ -55,10 +55,10 @@ Ce projet vise à analyser les données relatives aux véhicules, en utilisant d
 
 ## Auteurs
 
-- Aya Kinai - [AyaKinai](
-- Matthieu Picot - [MatthieuPicot](
-- Saïd Sabri - [SNAYZZ72](
-- Nathan Sarmento - [NathanSarmento](
+- Aya Kinai - [AyaKinai](https://github.com/Ayakinani)
+- Matthieu Picot - [ElFamosoBandito](https://github.com/ElFamosoBandito)
+- Saïd Sabri - [SNAYZZ72](https://github.com/SNAYZZ72)
+- Nathan Sarmento - [NathanSarmento](https://github.com/NathanSarmento)
 
 ## Contact
 
