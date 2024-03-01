@@ -1,3 +1,13 @@
+# Installer le package conflicted s'il n'est pas déjà installé
+if (!requireNamespace("conflicted", quietly = TRUE)) {
+  install.packages("conflicted")
+}
+
+# Charger le package conflicted et le configurer pour gérer les conflits
+library(conflicted)
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+
 #Chargement des bibliothèques nécessaires
 library(tidyverse) # Pour la manipulation et la visualisation des données
 library(readr)     # Pour lire les fichiers CSV
