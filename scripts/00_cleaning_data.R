@@ -108,4 +108,3 @@ files_to_clean <- c("Catalogue.csv", "Immatriculations.csv", "Clients_7.csv", "C
 lapply(files_to_clean, clean_data)
 
 message("Nettoyage termine pour tous les fichiers specifiques.")
-
