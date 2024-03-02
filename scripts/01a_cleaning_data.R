@@ -31,43 +31,53 @@ charger_et_nettoyer <- function(nom_table) {
     df <- df[df$situationFamiliale != "N/D" & nchar(df$situationFamiliale) > 0, ]
   }
 
-  if("age" %in% names(data)) {
-    data <- data %>% filter(age >= 18 & age <= 84)
+  if("age" %in% names(df)) {
+      df <- df[df$age >= 18 & df$age <= 84, ]
   }
 
-  if("taux" %in% names(data)) {
-    data <- data %>% filter(taux >= 544 & taux <= 74185)
+  if("taux" %in% names(df)) {
+      df <- df[df$taux >= 544 & df$taux <= 74185, ]
   }
 
-  if("nbEnfantsAcharge" %in% names(data)) {
-    data <- data %>% filter(nbEnfantsAcharge >= 0 & nbEnfantsAcharge <= 4)
+  if("nbEnfantsAcharge" %in% names(df)) {
+      df <- df[df$nbEnfantsAcharge >= 0, ]
   }
 
 
-  if("2eme voiture" %in% names(data)) {
-    data <- data %>% filter(nchar("X2eme.voiture") > 0)
+  if("X2eme.voiture" %in% names(df)) {
+      df$X2eme.voiture <- filter(nchar(df$X2eme.voiture) > 0)
   }
 
-  if("immatriculation" %in% names(data)) {
-    data <- data %>% filter(str_detect(immatriculation, "^[0-9]{4} [A-Z]{2} [0-9]{2}$"))
+  #"^[0-9]{4} [A-Z]{2} [0-9]{2}$"
+  if("immatriculation" %in% names(df)) {
+    df$immatriculation <- str_detect(immatriculation, "^[0-9]{4} [A-Z]{2} [0-9]{2}$")
+    }
+
+  if("marque" %in% names(df)) {
+    df$marque <- filter(nchar(df$marque) > 0)
+    }
+
+  if("puissance" %in% names(df)) {
+    df <- df[df$puissance >= 55 & df$age <= 507, ]
   }
 
-  if("marque" %in% names(data)) {
-    data <- data %>% filter(nchar(marque) > 0)
-  }
-
-  if("puissance" %in% names(data)) {
-    data <- data %>% filter(puissance >= 55 & puissance <= 507)
-  }
-
-  if("prix" %in% names(data)) {
-    data <- data %>% filter(prix >= 7500 & prix <= 101300)
+  if("prix" %in% names(df)) {
+    df <- df[df$prix >= 7500 & df$prix <= 101300, ]
   }
 
   if("sexe" %in% names(df)) {
-    df$sexe <- ifelse(df$sexe %in% c("Homme", "Masculin"), "M",
-                      ifelse(df$sexe %in% c("Femme", "Féminin"), "F", df$sexe))
+    df$sexe <- case_when(
+      df$sexe %in% c("Homme", "Masculin") ~ "M",
+      df$sexe %in% c("Femme", "Féminin") ~ "F",
+      TRUE ~ df$sexe
+    )
+    df <- df[df$sexe %in% c("F", "M"), ]
   }
+
+  # if("sexe" %in% names(df)) {
+  #   df$sexe <- ifelse(df$sexe %in% c("Homme", "Masculin"), "M",
+  #                     ifelse(df$sexe %in% c("Femme", "Féminin"), "F", df$sexe))
+  # }
 
 
   # Convertir les colonnes selon un mapping prédéfini
