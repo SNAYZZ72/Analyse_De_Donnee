@@ -1,19 +1,121 @@
+# Vérification et installation des packages nécessaires
+packages_needed <- c("cluster", "ggplot2", "stringr", "dplyr", "readr")
+packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
+if(length(packages_to_install)) install.packages(packages_to_install)
+
 
 # Activation des librairies
 library(cluster)
 library(ggplot2)
 library(stringr)
+library(dplyr)
+library(readr)
 
-# # Chemin vers les données nettoyées
-# chemin_data <- "data/"
-#
 
-# Charger le fichier CSV en spécifiant l'encodage si nécessaire
-clients_7 <- read.csv("data/Clients_7_sans_accents.csv", header = TRUE, fileEncoding = "UTF-8")
-clients_12 <- read.csv("data/Clients_12_sans_accents.csv", header = TRUE, fileEncoding = "UTF-8")
-catalogue <- read.csv("data/Catalogue_sans_accents.csv", header = TRUE, fileEncoding = "UTF-8")
-# immatriculation <- read.csv("data/Immatriculation.csv", header = TRUE, fileEncoding = "UTF-8")
-marketing <- read.csv("data/Marketing_sans_accents.csv", header = TRUE, fileEncoding = "UTF-8")
+# Chemin vers les données nettoyées
+chemin_data <- "data/sans_accents/"
+
+# Fonction pour charger et prévisualiser les données (glimpse)
+load_data <- function(file_name) {
+  data_path <- file.path(chemin_data, file_name)
+  if(!file.exists(data_path)) {
+    message("Le fichier ", data_path, " n'existe pas.")
+    return(NULL)
+  }
+  data <- read.csv(data_path, header = TRUE, sep = ",", stringsAsFactors = FALSE, encoding = "UTF-8")
+
+  glimpse(data)
+  return(data)
+}
+
+data <- data.frame(lapply(data, function(x) {
+  if (is.character(x)) iconv(x, from = "latin1", to = "UTF-8") else x
+}))
+
+
+Sys.setlocale("LC_CTYPE", "fr_FR.UTF-8")
+
+# Fonction pour afficher des histogrammes
+afficher_histogrammes <- function(donnees, variables) {
+  for (variable in variables) {
+    if (variable %in% names(donnees)) {
+      p <- ggplot(donnees, aes_string(x = variable)) + geom_bar() + theme_minimal() + ggtitle(paste("Distribution de", variable))
+      print(p)
+    } else {
+      message("La variable '", variable, "' n'existe pas dans les données fournies.")
+    }
+  }
+}
+
+
+# Afficher des histogrammes pour chaque fichier de données
+afficher_histogrammes(clients_7, c("age", "sexe", "taux", "situationFamiliale", "nbEnfantsAcharge", "X2eme.voiture"))
+afficher_histogrammes(clients_12, c("age", "sexe", "taux", "situationFamiliale", "nbEnfantsAcharge", "X2eme.voiture"))
+afficher_histogrammes(catalogue, c("marque", "nom", "puissance", "longueur", "nbPlaces", "nbPortes", "couleur", "occasion", "prix"))
+afficher_histogrammes(marketing, c("age", "sexe", "taux", "situationFamiliale", "nbEnfantsAcharge", "X2eme.voiture"))
+
+# Afficher un résumé des données
+summary(clients_7)
+summary(clients_12)
+summary(catalogue)
+summary(marketing)
+
+# Fonction pour des boites à moustaches
+afficher_boxplot <- function(donnees, variables) {
+  for (variable in variables) {
+    p <- ggplot(donnees, aes_string(x = "", y = variable)) + geom_boxplot() + theme_minimal() + ggtitle(paste("Distribution de", variable))
+    print(p)
+  }
+}
+
+# Afficher des boites à moustaches pour chaque fichier de données
+afficher_boxplot(clients_7, c("age", "taux", "nbEnfantsAcharge"))
+afficher_boxplot(clients_12, c("age", "taux", "nbEnfantsAcharge"))
+afficher_boxplot(catalogue, c("puissance", "nbPlaces", "nbPortes", "prix"))
+afficher_boxplot(marketing, c("age", "taux", "nbEnfantsAcharge"))
+
+# Fonction pour afficher des nuages de points
+afficher_nuage_points <- function(donnees, variables) {
+  for (variable in variables) {
+    p <- ggplot(donnees, aes_string(x = "age", y = variable)) + geom_point() + theme_minimal() + ggtitle(paste("Nuage de points entre age et", variable))
+    print(p)
+  }
+}
+
+# Afficher des nuages de points pour chaque fichier de données
+afficher_nuage_points(clients_7, c("taux", "nbEnfantsAcharge"))
+afficher_nuage_points(clients_12, c("taux", "nbEnfantsAcharge"))
+afficher_nuage_points(catalogue, "prix")
+afficher_nuage_points(marketing, c("taux", "nbEnfantsAcharge"))
+
+
+# Fonction pour afficher des diagrammes circulaires
+afficher_piechart <- function(donnees, variables) {
+  for (variable in variables) {
+    p <- ggplot(donnees, aes_string(x = "", y = variable)) + geom_bar(width = 1) + coord_polar("y") + theme_minimal() + ggtitle(paste("Diagramme circulaire de", variable))
+    print(p)
+  }
+}
+
+# Afficher des diagrammes circulaires pour chaque fichier de données
+afficher_piechart(clients_7, c("sexe", "situationFamiliale", "X2eme.voiture"))
+afficher_piechart(clients_12, c("sexe", "situationFamiliale", "X2eme.voiture"))
+afficher_piechart(catalogue, c("marque", "nbPlaces", "nbPortes", "occasion"))
+afficher_piechart(marketing, c("sexe", "situationFamiliale", "X2eme.voiture"))
+
+# Fonction pour afficher des densités
+afficher_densite <- function(donnees, variables) {
+  for (variable in variables) {
+    p <- ggplot(donnees, aes_string(x = variable)) + geom_density() + theme_minimal() + ggtitle(paste("Densité de", variable))
+    print(p)
+  }
+}
+
+# Afficher des densités pour chaque fichier de données
+afficher_densite(clients_7, c("age", "taux", "nbEnfantsAcharge"))
+afficher_densite(clients_12, c("age", "taux", "nbEnfantsAcharge"))
+afficher_densite(catalogue, c("puissance", "nbPlaces", "nbPortes", "prix"))
+afficher_densite(marketing, c("age", "taux", "nbEnfantsAcharge"))
 
 
 # Statistiques descriptives
@@ -22,67 +124,3 @@ marketing <- read.csv("data/Marketing_sans_accents.csv", header = TRUE, fileEnco
 # skim(clients_12)
 # skim(immatriculation)
 # skim(marketing)
-
-# Afficher un histogramme des données du fichier Client_7
-
-ggplot(clients_7, aes(x = age)) + geom_bar()
-ggplot(clients_7, aes(x = sexe)) + geom_bar()
-ggplot(clients_7, aes(x = taux)) + geom_bar()
-ggplot(clients_7, aes(x = situationFamiliale)) + geom_bar()
-ggplot(clients_7, aes(x = nbEnfantsAcharge)) + geom_bar()
-ggplot(clients_7, aes(x = X2eme.voiture)) + geom_bar()
-#ggplot(clients_7, aes(x = immatriculation)) + geom_bar()  # tourne en boucle
-
-print("Done client7")
-
-# Afficher un histogramme des données du fichier Client_12
-
-ggplot(clients_12, aes(x = age)) + geom_bar()
-ggplot(clients_12, aes(x = sexe)) + geom_bar()
-ggplot(clients_12, aes(x = taux)) + geom_bar()
-ggplot(clients_12, aes(x = situationFamiliale)) + geom_bar()
-ggplot(clients_12, aes(x = nbEnfantsAcharge)) + geom_bar()
-ggplot(clients_12, aes(x = X2eme.voiture)) + geom_bar()
-# ggplot(clients_12, aes(x = immatriculation)) + geom_bar()
-
-print("Done client12")
-
-# Afficher un histogramme des données du fichier Catalogue (marque,nom,puissance,longueur,nbPlaces,nbPortes,couleur,occasion,prix)
-
-ggplot(catalogue, aes(x = marque)) + geom_bar()
-ggplot(catalogue, aes(x = nom)) + geom_bar()
-ggplot(catalogue, aes(x = puissance)) + geom_histogram()
-ggplot(catalogue, aes(x = longueur)) + geom_bar()
-ggplot(catalogue, aes(x = nbPlaces)) + geom_bar()
-ggplot(catalogue, aes(x = nbPortes)) + geom_bar()
-ggplot(catalogue, aes(x = couleur)) + geom_bar()
-ggplot(catalogue, aes(x = occasion)) + geom_bar()
-ggplot(catalogue, aes(x = prix)) + geom_histogram()
-
-print("Done catalogue")
-
-# Afficher un histogramme des données du fichier Marketing (age,sexe,taux,situationFamiliale,nbEnfantsAcharge,2eme voiture)
-
-ggplot(marketing, aes(x = age)) + geom_histogram()
-ggplot(marketing, aes(x = sexe)) + geom_bar()
-ggplot(marketing, aes(x = taux)) + geom_histogram( )
-ggplot(marketing, aes(x = situationFamiliale)) + geom_bar()
-ggplot(marketing, aes(x = nbEnfantsAcharge)) + geom_bar()
-ggplot(marketing, aes(x = X2eme.voiture)) + geom_bar()
-
-print("Done marketing")
-
-# Afficher un histogramme des données du fichier Immatriculation (immatriculation, marque,nom,puissance,longueur,nbPlaces,nbPortes,couleur,occasion,prix
-
-# ggplot(immatriculation, aes(x = immatriculation)) + geom_bar()
-# ggplot(immatriculation, aes(x = marque)) + geom_bar()
-# ggplot(immatriculation, aes(x = nom)) + geom_bar()
-# ggplot(immatriculation, aes(x = puissance)) + geom_bar()
-# ggplot(immatriculation, aes(x = longueur)) + geom_bar()
-# ggplot(immatriculation, aes(x = nbPlaces)) + geom_bar()
-# ggplot(immatriculation, aes(x = nbPortes)) + geom_bar()
-# ggplot(immatriculation, aes(x = couleur)) + geom_bar()
-# ggplot(immatriculation, aes(x = occasion)) + geom_bar()
-# ggplot(immatriculation, aes(x = prix)) + geom_bar()
-
-
