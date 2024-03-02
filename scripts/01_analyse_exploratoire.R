@@ -28,6 +28,13 @@ load_data <- function(file_name) {
   return(data)
 }
 
+# Charger les données
+clients_7 <- load_data("Clients_7_sans_accents.csv")
+clients_12 <- load_data("Clients_12_sans_accents.csv")
+catalogue <- load_data("Catalogue_sans_accents.csv")
+marketing <- load_data("Marketing_sans_accents.csv")
+
+
 
 # Fonction pour afficher des histogrammes
 afficher_histogrammes <- function(donnees, variables) {
