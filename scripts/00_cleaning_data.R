@@ -10,6 +10,7 @@ library(stringr)
 
 # Chemin vers données
 chemin_data <- "data/"
+chemin_data_cleaned <- "data/cleaned/"
 
 # Fonction de nettoyage générique
 clean_data <- function(file_name) {
@@ -96,7 +97,7 @@ clean_data <- function(file_name) {
 
   # Sauvegarde du fichier nettoyé
   cleaned_file_name <- gsub(".csv", "_clean.csv", file_name)
-  write.csv(data, file.path(chemin_data, cleaned_file_name), row.names = FALSE)
+  write.csv(data, file.path(chemin_data_cleaned, cleaned_file_name), row.names = FALSE)
 
   message("Nettoyage termine pour ", file_name)
 }
