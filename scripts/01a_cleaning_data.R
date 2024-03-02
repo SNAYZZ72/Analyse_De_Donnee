@@ -6,8 +6,6 @@ if (length(new_packages)) install.packages(new_packages)
 # Activation des librairies avec lapply pour plus de concision
 lapply(packages_needed, library, character.only = TRUE)
 
-
-
 # Connexion à la base de données Oracle
 connexion <- odbcConnect("ORCLPROJETDB_DNS", uid="PROJET", pwd="123", believeNRows=FALSE)
 
