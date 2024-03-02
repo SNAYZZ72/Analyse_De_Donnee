@@ -28,12 +28,6 @@ load_data <- function(file_name) {
   return(data)
 }
 
-data <- data.frame(lapply(data, function(x) {
-  if (is.character(x)) iconv(x, from = "latin1", to = "UTF-8") else x
-}))
-
-
-Sys.setlocale("LC_CTYPE", "fr_FR.UTF-8")
 
 # Fonction pour afficher des histogrammes
 afficher_histogrammes <- function(donnees, variables) {
