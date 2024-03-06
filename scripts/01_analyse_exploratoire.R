@@ -63,10 +63,10 @@ afficher_boxplot <- function(donnees, variables) {
 }
 
 # Afficher des boites à moustaches pour chaque fichier de données
-afficher_boxplot(clients_7, c("age", "taux", "nbEnfantsAcharge"))
-afficher_boxplot(clients_12, c("age", "taux", "nbEnfantsAcharge"))
-afficher_boxplot(catalogue, c("puissance", "nbPlaces", "nbPortes", "prix"))
-afficher_boxplot(marketing, c("age", "taux", "nbEnfantsAcharge"))
+afficher_boxplot(clients_7_sans_accents, c("age", "taux", "nbEnfantsAcharge"))
+afficher_boxplot(clients_12_sans_accents, c("age", "taux", "nbEnfantsAcharge"))
+afficher_boxplot(catalogue_sans_accents, c("puissance", "nbPlaces", "nbPortes", "prix"))
+afficher_boxplot(marketing_sans_accents, c("age", "taux", "nbEnfantsAcharge"))
 
 # Fonction pour afficher des nuages de points
 afficher_nuage_points <- function(donnees, variables) {
@@ -77,10 +77,10 @@ afficher_nuage_points <- function(donnees, variables) {
 }
 
 # Afficher des nuages de points pour chaque fichier de données
-afficher_nuage_points(clients_7, c("taux", "nbEnfantsAcharge"))
-afficher_nuage_points(clients_12, c("taux", "nbEnfantsAcharge"))
-afficher_nuage_points(catalogue, "prix")
-afficher_nuage_points(marketing, c("taux", "nbEnfantsAcharge"))
+afficher_nuage_points(clients_7_sans_accents, c("taux", "nbEnfantsAcharge"))
+afficher_nuage_points(clients_12_sans_accents, c("taux", "nbEnfantsAcharge"))
+afficher_nuage_points(catalogue_sans_accents, "prix")
+afficher_nuage_points(marketing_sans_accents, c("taux", "nbEnfantsAcharge"))
 
 
 # Fonction pour afficher des diagrammes circulaires
