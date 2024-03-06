@@ -1,4 +1,4 @@
-# Vérification et installation des packages nécessaires
+a# Vérification et installation des packages nécessaires
 packages_needed <- c("cluster", "ggplot2", "stringr", "dplyr", "readr")
 packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
 if(length(packages_to_install)) install.packages(packages_to_install)
