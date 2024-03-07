@@ -27,8 +27,16 @@ library(dplyr)
 # Chargement des données
 data <- read.csv("data/cleaned/Catalogue_clean.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE, encoding = "UTF-8")
 
+#remplacer dans la colonne "longueur", "courte" par 1, "moyenne" par 2, "longue" par 3, "très longue" par 4
+data$longueur <- factor(data$longueur, levels = c("courte", "moyenne", "longue", "très longue"), labels = c(1, 2, 3, 4))
+
+#conversion de la colonne "longueur" en numérique
+data$longueur <- as.numeric(as.character(data$longueur))
+
 # Sélection des variables pertinentes
 selected_data <- data[, c("puissance", "longueur", "nbPlaces", "nbPortes", "prix")]
+
+print(head(selected_data))
 
 # Normalisation des données
 normalized_data <- scale(selected_data)
@@ -53,3 +61,5 @@ cluster_summary <- data %>% group_by(cluster) %>% summarize_all(mean)
 
 # Visualisation des clusters
 ggplot(data, aes(x = puissance, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Puissance", y = "Prix") + theme_minimal()
+
+

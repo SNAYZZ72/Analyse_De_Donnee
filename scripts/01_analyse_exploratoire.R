@@ -14,7 +14,10 @@ library(rlang)
 
 
 # Chemin vers les données nettoyées
-chemin_data <- "data/sans_accents/"
+chemin_data <- "data/cleaned"
+
+#chemin vers les données non nettoyées
+# chemin_data <- "data/sans_accents"
 
 # Fonction pour charger et prévisualiser les données (glimpse)
 load_data <- function(file_name) {
@@ -29,11 +32,19 @@ load_data <- function(file_name) {
   return(data)
 }
 
-# Charger les données
-clients_7 <- load_data("Clients_7_sans_accents.csv")
-clients_12 <- load_data("Clients_12_sans_accents.csv")
-catalogue <- load_data("Catalogue_sans_accents.csv")
-marketing <- load_data("Marketing_sans_accents.csv")
+# Charger les données nettoyées
+clients_7 <- load_data("Clients_7_sans_accents_clean.csv")
+clients_12 <- load_data("Clients_12_sans_accents_clean.csv")
+catalogue <- load_data("Catalogue_sans_accents_clean.csv")
+marketing <- load_data("Marketing_sans_accents_clean.csv")
+Immatriculation <- load_data("Immatriculations_sans_accents_clean.csv")
+
+# Charger les données non nettoyées
+# clients_7 <- load_data("Clients_7_sans_accents.csv")
+# clients_12 <- load_data("Clients_12_sans_accents.csv")
+# catalogue <- load_data("Catalogue_sans_accents.csv")
+# marketing <- load_data("Marketing_sans_accents.csv")
+# Immatriculation <- load_data("Immatriculations_sans_accents.csv")
 
 
 
@@ -55,12 +66,14 @@ afficher_histogrammes(clients_7, c("age", "sexe", "taux", "situationFamiliale", 
 afficher_histogrammes(clients_12, c("age", "sexe", "taux", "situationFamiliale", "nbEnfantsAcharge", "X2eme.voiture"))
 afficher_histogrammes(catalogue, c("marque", "nom", "puissance", "longueur", "nbPlaces", "nbPortes", "couleur", "occasion", "prix"))
 afficher_histogrammes(marketing, c("age", "sexe", "taux", "situationFamiliale", "nbEnfantsAcharge", "X2eme.voiture"))
+afficher_histogrammes(Immatriculation, c("marque", "nom", "puissance", "longueur", "nbPlaces", "nbPortes", "couleur", "occasion", "prix"))
 
 # Afficher un résumé des données
 summary(clients_7)
 summary(clients_12)
 summary(catalogue)
 summary(marketing)
+summary(Immatriculation)
 
 # Fonction pour des boites à moustaches
 afficher_boxplot <- function(donnees, variables) {
@@ -78,6 +91,7 @@ afficher_boxplot(clients_7, c("age", "taux", "nbEnfantsAcharge"))
 afficher_boxplot(clients_12, c("age", "taux", "nbEnfantsAcharge"))
 afficher_boxplot(catalogue, c("puissance", "nbPlaces", "nbPortes", "prix"))
 afficher_boxplot(marketing, c("age", "taux", "nbEnfantsAcharge"))
+afficher_boxplot(Immatriculation, c("puissance", "nbPlaces", "nbPortes", "prix"))
 
 # Fonction pour afficher des nuages de points
 afficher_nuage_points <- function(data, variable_y) {
@@ -96,6 +110,7 @@ afficher_nuage_points(clients_7, c("taux", "nbEnfantsAcharge"))
 afficher_nuage_points(clients_12, c("taux", "nbEnfantsAcharge"))
 afficher_nuage_points(catalogue, c("puissance", "nbPlaces", "nbPortes", "prix"))
 afficher_nuage_points(marketing, c("taux", "nbEnfantsAcharge"))
+afficher_nuage_points(Immatriculation, c("puissance", "nbPlaces", "nbPortes", "prix"))
 
 
 # Fonction pour afficher des diagrammes circulaires
@@ -122,6 +137,7 @@ afficher_piechart(clients_7, c("sexe", "situationFamiliale", "X2eme.voiture"))
 afficher_piechart(clients_12, c("sexe", "situationFamiliale", "X2eme.voiture"))
 afficher_piechart(catalogue, c("marque", "nbPlaces", "nbPortes", "occasion"))
 afficher_piechart(marketing, c("sexe", "situationFamiliale", "X2eme.voiture"))
+afficher_piechart(Immatriculation, c("marque", "nbPlaces", "nbPortes", "occasion"))
 
 # Fonction pour afficher des densités
 afficher_densite <- function(donnees, variables) {
@@ -136,6 +152,7 @@ afficher_densite(clients_7, c("age", "taux", "nbEnfantsAcharge"))
 afficher_densite(clients_12, c("age", "taux", "nbEnfantsAcharge"))
 afficher_densite(catalogue, c("puissance", "nbPlaces", "nbPortes", "prix"))
 afficher_densite(marketing, c("age", "taux", "nbEnfantsAcharge"))
+afficher_densite(Immatriculation, c("puissance", "nbPlaces", "nbPortes", "prix"))
 
 # Fonction pour afficher des statistiques descriptives
 affichier_statistiques_descriptives <- function(donnees) {
@@ -148,4 +165,6 @@ affichier_statistiques_descriptives(clients_7)
 affichier_statistiques_descriptives(clients_12)
 affichier_statistiques_descriptives(catalogue)
 affichier_statistiques_descriptives(marketing)
+affichier_statistiques_descriptives(Immatriculation)
+
 
