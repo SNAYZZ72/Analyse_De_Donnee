@@ -76,12 +76,12 @@ clean_data <- function(file_name) {
     data <- data %>% filter(situationFamiliale %in% c("Celibataire", "Divorcee", "En Couple", "Marie(e)", "Seul", "Seule"))
   }
 
-  #On garder que les lignes avec des nombres d'enfants à charge entre 0 et 4
+  #On garde que les lignes avec des nombres d'enfants à charge entre 0 et 4
     if("nbEnfantsAcharge" %in% names(data)) {
         data <- data %>% filter(nbEnfantsAcharge >= 0 & nbEnfantsAcharge <= 4)
     }
 
-  #On garde que les lignes qui on comme valeurs true ou false. Puis on convertie les valeurs de cette ligne de chaines de caractères à booléen donc la chaine de caractère "true" devient TRUE et la chaine de caractère "false" devient FALSE
+  #On garde que les lignes qui on comme valeurs true ou false. Puis on convertie en booléen
     if("X2eme.voiture" %in% names(data)) {
         data <- data %>% filter(X2eme.voiture %in% c("true", "false")) %>%
             mutate(X2eme.voiture = X2eme.voiture == "true")
