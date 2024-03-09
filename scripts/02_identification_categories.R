@@ -1,3 +1,9 @@
+# Vérification et installation des packages nécessaires
+packages_needed <- c("cluster", "ggplot2", "dplyr")
+packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
+if(length(packages_to_install)) install.packages(packages_to_install)
+
+
 # Chargement des packages
 library(cluster)
 library(ggplot2)
