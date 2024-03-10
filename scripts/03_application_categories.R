@@ -65,6 +65,37 @@ ggplot(catalogue, aes(x = factor(Categorie), fill = Categorie)) +
   theme(axis.text.x = element_text(angle = 64, hjust = 1)) +
   labs(title = "Distribution des Categories de Vehicules", x = "Categorie", y = "Nombre de Vehicules")
 
+# Fonction pour afficher les noms de véhicules par catégorie
+afficher_vehicules_par_categorie <- function(catalogue) {
+  vehicules_par_categorie <- catalogue %>%
+    group_by(Categorie) %>%
+    summarise(NomsVehicules = paste(nom, collapse = ", ")) %>%
+    arrange(Categorie)
+
+  print(vehicules_par_categorie)
+}
+
+# Appliquer la fonction pour afficher les noms de véhicules par catégorie
+afficher_vehicules_par_categorie(catalogue)
+
+catalogue_sampled <- catalogue %>%
+  group_by(Categorie) %>%
+  sample_n(min(5, n()), replace = TRUE) %>%
+  ungroup()
+
+# Créer le graphique
+ggplot(catalogue_sampled, aes(x = Categorie, y = reorder(nom, Categorie))) +
+  geom_text(aes(label = nom), check_overlap = TRUE, hjust = 1, size = 3) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Noms des vehicules par categorie", x = "Categorie", y = "Nom du vehicule")
+
+# ggplot(catalogue, aes(x = Categorie, y = reorder(nom, Categorie))) +
+#   geom_point(stat = "identity", aes(color = Categorie)) +
+#   scale_fill_viridis_d() +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+#   labs(title = "Distribution des Categories de Vehicules", x = "Categorie", y = "Nom du Vehicule")
 
 
 # Enregistrer le catalogue mis à jour dans un nouveau fichier CSV
