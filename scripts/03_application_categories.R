@@ -40,10 +40,11 @@ attribuer_categorie_complexe <- function(catalogue) {
   catalogue <- catalogue %>%
     mutate(Categorie = case_when(
       longueur == "courte" & puissance <= 120 ~ "Citadines compactes et abordables",
+      # (longueur == "moyenne" | longueur == "longue") & puissance >= 120 & puissance <= 180 ~ "Berlines familiales puissantes et confortables",
       longueur %in% c("moyenne", "longue") & puissance >= 120 & puissance <= 180 ~ "Berlines familiales puissantes et confortables",
       longueur == "longue" & nbPlaces <= 5 & puissance <= 250 ~ "Voitures compactes sportives et economiques",
       longueur == "longue" & nbPlaces > 5 & puissance <= 180 ~ "Monospaces familiaux spacieux et abordables",
-      longueur %in% c("longue", "tres longue") & puissance > 180 & puissance <= 300 ~ "Voitures de sport puissantes et luxueuses",
+      (longueur == "longue" | longueur == "tres longue") & puissance > 180 & puissance < 300 ~ "Voitures de sport puissantes et luxueuses",
       longueur == "tres longue" & puissance > 300 ~ "Autres",
       TRUE ~ "Non specifie"
     ))
@@ -69,8 +70,10 @@ ggplot(catalogue, aes(x = factor(Categorie), fill = Categorie)) +
 afficher_vehicules_par_categorie <- function(catalogue) {
   vehicules_par_categorie <- catalogue %>%
     group_by(Categorie) %>%
-    summarise(NomsVehicules = paste(nom, collapse = ", ")) %>%
+    summarise(NomsVehicules = paste(unique(nom), collapse = ", ")) %>%
     arrange(Categorie)
+
+  writeLines(vehicules_par_categorie$NomsVehicules)
 
   print(vehicules_par_categorie)
 }
@@ -86,6 +89,7 @@ catalogue_sampled <- catalogue %>%
 # Créer le graphique
 ggplot(catalogue_sampled, aes(x = Categorie, y = reorder(nom, Categorie))) +
   geom_text(aes(label = nom), check_overlap = TRUE, hjust = 1, size = 3) +
+  scale_fill_viridis_d() +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Noms des vehicules par categorie", x = "Categorie", y = "Nom du vehicule")
@@ -99,5 +103,5 @@ ggplot(catalogue_sampled, aes(x = Categorie, y = reorder(nom, Categorie))) +
 
 
 # Enregistrer le catalogue mis à jour dans un nouveau fichier CSV
-# write.csv(catalogue, "data/cleaned/Catalogue_avec_categories.csv", row.names = FALSE)
+write.csv(catalogue, "data/cleaned/Catalogue_avec_categories.csv", row.names = FALSE)
 
