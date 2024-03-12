@@ -34,6 +34,9 @@ cluster_summary <- data %>%
 
 print(cluster_summary)
 
+# Enregistrement des résultats dans un fichier CSV
+write.csv(data_clustered, "data/resultats_clustering.csv", row.names = FALSE)
+
 # Visualisation des clusters
 ggplot(data, aes(x = puissance, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Puissance", y = "Prix") + theme_minimal()
 
@@ -42,4 +45,3 @@ ggplot(data, aes(x = longueur, y = prix, color = factor(cluster))) + geom_point(
 ggplot(data, aes(x = nbPlaces, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de places", y = "Prix") + theme_minimal()
 
 ggplot(data, aes(x = nbPortes, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de portes", y = "Prix") + theme_minimal()
-
