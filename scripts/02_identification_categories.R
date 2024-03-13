@@ -12,15 +12,37 @@ library(rpart)
 library(rpart.plot)
 library(caret)
 
+# Chemin vers les données nettoyées
+chemin_data <- "data/cleaned"
+
+# Fonction pour charger
+load_data <- function(file_name) {
+  data_path <- file.path(chemin_data, file_name)
+  if(!file.exists(data_path)) {
+    message("Le fichier ", data_path, " n'existe pas.")
+    return(NULL)
+  }
+  data <- fread(data_path, encoding = "UTF-8")
+  return(data)
+}
+
 # Chargement des données
-data <- read.csv("data/cleaned/Catalogue_sans_accents_clean.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE, encoding = "UTF-8")
+data <- load_data("Catalogue_sans_accents_clean.csv")
+# data <- load_data("Immatriculations_sans_accents_clean.csv")
 
 # Conversion de la variable "longueur" en numérique
 data$longueur <- factor(data$longueur, levels = c("courte", "moyenne", "longue", "tres longue"), labels = c(1, 2, 3, 4))
 data$longueur <- as.numeric(as.character(data$longueur))
 
+# Conversion des variables au format correct (si nécessaire)
+data$puissance <- as.numeric(as.character(data$puissance))
+data$nbPlaces <- as.numeric(as.character(data$nbPlaces))
+data$nbPortes <- as.numeric(as.character(data$nbPortes))
+data$prix <- as.numeric(as.character(data$prix))
+
 # Exclusion des variables non pertinentes
 variables_a_exclure <- c("marque", "nom", "couleur", "occasion")
+# variables_a_exclure <- c("immatriculation","marque", "nom", "couleur", "occasion")
 data <- select(data, -variables_a_exclure)
 
 # Sélection des variables restantes

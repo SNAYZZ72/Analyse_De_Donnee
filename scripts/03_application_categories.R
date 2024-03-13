@@ -29,33 +29,46 @@ load_data <- function(file_name) {
 
 # Charger les données nettoyées
 catalogue <- load_data("Catalogue_sans_accents_clean.csv")
+immatriculations <- load_data("Immatriculations_sans_accents_clean.csv")
+
+# Conversion de la variable "longueur" en numérique
+data$longueur <- factor(data$longueur, levels = c("courte", "moyenne", "longue", "tres longue"), labels = c(1, 2, 3, 4))
+data$longueur <- as.numeric(as.character(data$longueur))
+
+# Conversion des variables au format correct (si nécessaire)
+data$puissance <- as.numeric(as.character(data$puissance))
+data$nbPlaces <- as.numeric(as.character(data$nbPlaces))
+data$nbPortes <- as.numeric(as.character(data$nbPortes))
+data$prix <- as.numeric(as.character(data$prix))
 
 # Fonction pour attribuer une catégorie
-attribuer_categorie_complexe <- function(catalogue) {
-  # Assurer que 'longueur' et 'puissance' sont au format correct (si nécessaire)
-  catalogue$longueur <- as.character(catalogue$longueur)
-  catalogue$puissance <- as.numeric(as.character(catalogue$puissance))
+attribuer_categorie_complexe <- function(data) {
+  # Conversion des variables au format correct (si nécessaire)
+  data$puissance <- as.numeric(as.character(data$puissance))
+  data$nbPlaces <- as.numeric(as.character(data$nbPlaces))
+  data$nbPortes <- as.numeric(as.character(data$nbPortes))
 
-  # Application des catégories en fonction de critères prédéfinis
-  catalogue <- catalogue %>%
+  # Application des catégories en fonction des règles de l'arbre de décision
+  data <- data %>%
     mutate(Categorie = case_when(
-      longueur == "courte" & puissance <= 120 ~ "Citadines compactes et abordables",
-      # (longueur == "moyenne" | longueur == "longue") & puissance >= 120 & puissance <= 180 ~ "Berlines familiales puissantes et confortables",
-      longueur %in% c("moyenne", "longue") & puissance >= 120 & puissance <= 180 ~ "Berlines familiales puissantes et confortables",
-      longueur == "longue" & nbPlaces <= 5 & puissance <= 250 ~ "Voitures compactes sportives et economiques",
-      longueur == "longue" & nbPlaces > 5 & puissance <= 180 ~ "Monospaces familiaux spacieux et abordables",
-      (longueur == "longue" | longueur == "tres longue") & puissance > 180 & puissance < 300 ~ "Voitures de sport puissantes et luxueuses",
-      longueur == "tres longue" & puissance > 300 ~ "Autres",
-      TRUE ~ "Non specifie"
+      puissance < 100 & prix <= 15000 ~ "Citadines compactes et abordables",
+      puissance >= 100 & puissance < 200 & prix > 15000 & prix <= 30000 ~ "Berlines familiales puissantes et confortables",
+      puissance >= 100 & puissance < 200 & prix <= 20000 ~ "Voitures compactes sportives et economiques",
+      puissance >= 200 & prix > 30000 ~ "Voitures de sport puissantes et luxueuses",
+      nbPlaces >= 5 & prix <= 25000 ~ "Monospaces familiaux spacieux et abordables",
+      TRUE ~ "Autre"
     ))
-  return(catalogue)
+  return(data)
 }
+
 
 # Appliquer la fonction étendue pour attribuer les catégories
 catalogue <- attribuer_categorie_complexe(catalogue)
+immatriculations <- attribuer_categorie_complexe(immatriculations)
 
 # Affichez ou enregistrez votre catalogue avec les catégories attribuées
 head(catalogue, 50)
+head(immatriculations, 50)
 
 # Affichez la distribution des catégories
 ggplot(catalogue, aes(x = factor(Categorie), fill = Categorie)) +
@@ -64,7 +77,16 @@ ggplot(catalogue, aes(x = factor(Categorie), fill = Categorie)) +
   scale_fill_viridis_d() +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 64, hjust = 1)) +
-  labs(title = "Distribution des Categories de Vehicules", x = "Categorie", y = "Nombre de Vehicules")
+  labs(title = "Distribution des Categories de Vehicules catalogue", x = "Categorie", y = "Nombre de Vehicules")
+
+# Affichez la distribution des catégories
+ggplot(immatriculations, aes(x = factor(Categorie), fill = Categorie)) +
+  geom_bar() +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, color = "black") +
+  scale_fill_viridis_d() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 64, hjust = 1)) +
+  labs(title = "Distribution des Categories de Vehicules Immatriculations", x = "Categorie", y = "Nombre de Vehicules")
 
 # Fonction pour afficher les noms de véhicules par catégorie
 afficher_vehicules_par_categorie <- function(catalogue) {
@@ -80,11 +102,18 @@ afficher_vehicules_par_categorie <- function(catalogue) {
 
 # Appliquer la fonction pour afficher les noms de véhicules par catégorie
 afficher_vehicules_par_categorie(catalogue)
+afficher_vehicules_par_categorie(immatriculations)
 
 catalogue_sampled <- catalogue %>%
   group_by(Categorie) %>%
   sample_n(min(5, n()), replace = TRUE) %>%
   ungroup()
+
+immatriculations_sampled <- immatriculations %>%
+  group_by(Categorie) %>%
+  sample_n(min(5, n()), replace = TRUE) %>%
+  ungroup()
+
 
 # Créer le graphique
 ggplot(catalogue_sampled, aes(x = Categorie, y = reorder(nom, Categorie))) +
@@ -94,14 +123,16 @@ ggplot(catalogue_sampled, aes(x = Categorie, y = reorder(nom, Categorie))) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Noms des vehicules par categorie", x = "Categorie", y = "Nom du vehicule")
 
-# ggplot(catalogue, aes(x = Categorie, y = reorder(nom, Categorie))) +
-#   geom_point(stat = "identity", aes(color = Categorie)) +
-#   scale_fill_viridis_d() +
-#   theme_minimal() +
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-#   labs(title = "Distribution des Categories de Vehicules", x = "Categorie", y = "Nom du Vehicule")
+ggplot(immatriculations, aes(x = Categorie, y = reorder(nom, Categorie))) +
+  geom_text(aes(label = nom), check_overlap = TRUE, hjust = 1, size = 3) +
+  scale_fill_viridis_d() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Distribution des Categories de Vehicules immatriculations", x = "Categorie", y = "Nom du Vehicule")
 
 
-# Enregistrer le catalogue mis à jour dans un nouveau fichier CSV
-write.csv(catalogue, "data/cleaned/Catalogue_avec_categories.csv", row.names = FALSE)
+# Enregistrer fichier mis à jour dans un nouveau fichier CSV
+write.csv(catalogue, file = "data/cleaned/Catalogue_sans_accents_clean.csv", row.names = FALSE)
+write.csv(immatriculations, file = "data/cleaned/Immatriculations_sans_accents_clean.csv", row.names = FALSE)
+
 
