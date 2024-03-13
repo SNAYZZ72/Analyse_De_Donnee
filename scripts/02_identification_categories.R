@@ -1,5 +1,5 @@
 # Vérification et installation des packages nécessaires
-packages_needed <- c("cluster", "ggplot2", "dplyr")
+packages_needed <- c("cluster", "ggplot2", "dplyr", "rpart", "rpart.plot", "caret")
 packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
 if(length(packages_to_install)) install.packages(packages_to_install)
 
@@ -8,6 +8,9 @@ if(length(packages_to_install)) install.packages(packages_to_install)
 library(cluster)
 library(ggplot2)
 library(dplyr)
+library(rpart)
+library(rpart.plot)
+library(caret)
 
 # Chargement des données
 data <- read.csv("data/cleaned/Catalogue_sans_accents_clean.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE, encoding = "UTF-8")
@@ -49,3 +52,42 @@ ggplot(data, aes(x = nbPlaces, y = prix, color = factor(cluster))) + geom_point(
 
 ggplot(data, aes(x = nbPortes, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de portes", y = "Prix") + theme_minimal()
 
+
+# Construction de l'arbre de décision
+data$cluster <- as.factor(data$cluster)
+set.seed(123) # Pour reproductibilité
+fitControl <- trainControl(method = "cv", number = 10)
+arbre_decision_cv <- train(cluster ~ puissance + longueur + nbPlaces + nbPortes + prix, data = data, method = "rpart", trControl = fitControl, tuneLength = 10)
+
+# Meilleur modèle
+bestModel <- arbre_decision_cv$finalModel
+
+# Visualiser l'arbre élagué
+rpart.plot(bestModel, extra = 102, under = TRUE, cex = 0.8, tweak = 1.5,
+           fallen.leaves = TRUE, type = 3, shadow.col = "gray", nn = TRUE,
+           yesno = 2, box.palette = "RdYlGn")
+
+predictions <- predict(bestModel, data, type = "class")
+data$predictedCluster <- predictions
+
+# Matrice de confusion
+confusionMatrix(data$cluster, data$predictedCluster)
+
+# Extraction de l'importance des variables
+var_importance <- bestModel$variable.importance
+
+# Transformation en data frame pour ggplot2
+var_importance_df <- as.data.frame(var_importance)
+var_importance_df$Variable <- rownames(var_importance_df)
+var_importance_df$Importance <- var_importance_df$var_importance
+var_importance_df <- var_importance_df[ , -1] # Enlever la colonne originale
+
+# Création du graphique d'importance des variables avec ggplot2
+library(ggplot2)
+ggplot(var_importance_df, aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() + # Pour une meilleure lisibilité
+  labs(title = "Importance des Variables dans l'Arbre de Decision",
+       x = "Variables",
+       y = "Importance") +
+  theme_minimal()
