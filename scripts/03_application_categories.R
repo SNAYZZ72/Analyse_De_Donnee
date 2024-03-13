@@ -116,7 +116,7 @@ enregistrer_dataframe <- function(dataframe, file_name) {
 }
 
 # Utiliser la fonction pour enregistrer les dataframes
-enregistrer_dataframe(catalogue, "Catalogue_sans_accents_clean.csv")
-enregistrer_dataframe(immatriculations, "Immatriculations_sans_accents_clean.csv")
+enregistrer_dataframe(catalogue, "Catalogue_categorie.csv")
+enregistrer_dataframe(immatriculations, "Immatriculations_categorie.csv")
 
 
