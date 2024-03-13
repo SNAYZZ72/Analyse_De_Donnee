@@ -39,14 +39,18 @@ attribuer_categorie_complexe <- function(catalogue) {
   # Application des catégories en fonction de critères prédéfinis
   catalogue <- catalogue %>%
     mutate(Categorie = case_when(
-      longueur == "courte" & puissance <= 120 ~ "Citadines compactes et abordables",
-      # (longueur == "moyenne" | longueur == "longue") & puissance >= 120 & puissance <= 180 ~ "Berlines familiales puissantes et confortables",
-      longueur %in% c("moyenne", "longue") & puissance >= 120 & puissance <= 180 ~ "Berlines familiales puissantes et confortables",
-      longueur == "longue" & nbPlaces <= 5 & puissance <= 250 ~ "Voitures compactes sportives et economiques",
-      longueur == "longue" & nbPlaces > 5 & puissance <= 180 ~ "Monospaces familiaux spacieux et abordables",
-      (longueur == "longue" | longueur == "tres longue") & puissance > 180 & puissance < 300 ~ "Voitures de sport puissantes et luxueuses",
-      longueur == "tres longue" & puissance > 300 ~ "Autres",
-      TRUE ~ "Non specifie"
+      # Cluster 1: Citadines compactes et abordables
+      (longueur == "courte" & puissance <= 120 & prix <= 15000) ~ "Citadine",
+      # Cluster 2: Berlines familiales puissantes et confortables
+      (longueur == "moyenne" & puissance > 120 & prix > 25000) ~ "Berline familiale",
+      # Cluster 3: Voitures compactes sportives et économiques
+      (longueur == "courte" & puissance > 120 & prix <= 25000) ~ "Compacte sportive",
+      # Cluster 4: Voitures de sport puissantes et luxueuses
+      (longueur == "longue" & puissance > 250 & prix > 50000) ~ "Voiture de sport",
+      # Cluster 5: Monospaces familiaux spacieux et abordables
+      (longueur == "longue" & puissance <= 250 & nbPlaces >= 7) ~ "Monospace",
+      # Cas par défaut
+      TRUE ~ "Inconnu"
     ))
   return(catalogue)
 }
