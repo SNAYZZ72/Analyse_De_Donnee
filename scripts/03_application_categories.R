@@ -1,17 +1,10 @@
-# Application des catégorie identifier dans le script 02_identification_categories.R
 # Vérification et installation des packages nécessaires
 packages_needed <- c("cluster", "ggplot2", "dplyr", "readr", "data.table", "scales")
-packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
-if(length(packages_to_install)) install.packages(packages_to_install)
+new_packages <- packages_needed[!packages_needed %in% installed.packages()[,"Package"]]
+if(length(new_packages)) install.packages(new_packages)
 
-# Chargement des packages
-# library(cluster)
-# library(ggplot2)
-# library(dplyr)
-# library(readr)
-# library(data.table)
-# library(scales)
-lapply(packages_needed, library, character.only = TRUE)
+# Chargement des packages avec lapply
+lapply(packages_needed, require, character.only = TRUE)
 
 # Chemin vers les données nettoyées
 chemin_data <- "data/cleaned"
@@ -29,45 +22,75 @@ load_data <- function(file_name) {
 
 # Charger les données nettoyées
 catalogue <- load_data("Catalogue_sans_accents_clean.csv")
+immatriculations <- load_data("Immatriculations_sans_accents_clean.csv")
 
-# Convertir la variable "longueur" en numérique
-# catalogue$longueur <- factor(data$longueur, levels = c("courte", "moyenne", "longue", "tres longue"), labels = c(1, 2, 3, 4))
-# catalogue$longueur <- as.numeric(as.character(data$longueur))
+# Conversion de la variable "longueur" en numérique
+# data$longueur <- factor(data$longueur, levels = c("courte", "moyenne", "longue", "tres longue"), labels = c(1, 2, 3, 4))
+# data$longueur <- as.numeric(as.character(data$longueur))
 
-# Fonction pour attribuer une catégorie
-attribuer_categorie_complexe <- function(catalogue) {
-  # Conversion des variables au format correct (si nécessaire)
-  catalogue$puissance <- as.numeric(as.character(catalogue$puissance))
-  catalogue$nbPlaces <- as.numeric(as.character(catalogue$nbPlaces))
-  catalogue$nbPortes <- as.numeric(as.character(catalogue$nbPortes))
 
-  # Application des catégories en fonction des règles de l'arbre de décision
-  catalogue <- catalogue %>%
-    mutate(Categorie = case_when(
-      puissance >= 223 ~ "Voitures de sport puissantes et luxueuses",  # Catégorie
-      puissance < 223 & nbPortes >= 4 ~ "Monospaces familiaux spacieux et abordables",  # Catégorie 2
-      puissance < 223 & nbPortes < 4 & nbPlaces < 6 ~ "Voitures compactes sportives et economiques",  # Catégorie 5
-      puissance < 223 & nbPortes < 4 & nbPlaces >= 6 & puissance >= 138 ~ "Berlines familiales puissantes et confortables",  # Catégorie 4
-      puissance < 223 & nbPortes < 4 & nbPlaces >= 6 & puissance < 138 ~ "Citadines compactes et abordables",  # Catégorie 3
-      TRUE ~ "Autres"  # Pour tout ce qui ne correspond pas aux règles ci-dessus
-    ))
-  return(catalogue)
+data$prix <- as.numeric(as.character(data$prix))
+
+
+# Fonction pour attribuer une catégorie plus efficacement
+attribuer_categorie_complexe <- function(data) {
+  data %>%
+    mutate(
+      puissance = as.numeric(puissance),
+      nbPlaces = as.numeric(nbPlaces),
+      nbPortes = as.numeric(nbPortes),
+      Categorie = case_when(
+        puissance < 100 & prix <= 15000 ~ "Citadines compactes et abordables",
+        puissance >= 100 & puissance < 200 & prix > 15000 & prix <= 30000 ~ "Berlines familiales puissantes et confortables",
+        puissance >= 100 & puissance < 200 & prix <= 20000 ~ "Voitures compactes sportives et economiques",
+        puissance >= 200 & prix > 30000 ~ "Voitures de sport puissantes et luxueuses",
+        nbPlaces >= 5 & prix <= 25000 ~ "Monospaces familiaux spacieux et abordables",
+        TRUE ~ "Autre"
+      )
+    )
 }
 
 # Appliquer la fonction étendue pour attribuer les catégories
 catalogue <- attribuer_categorie_complexe(catalogue)
+immatriculations <- attribuer_categorie_complexe(immatriculations)
 
 # Affichez ou enregistrez votre catalogue avec les catégories attribuées
 head(catalogue, 50)
+head(immatriculations, 50)
 
-# Affichez la distribution des catégories
-ggplot(catalogue, aes(x = factor(Categorie), fill = Categorie)) +
-  geom_bar() +
-  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, color = "black") +
-  scale_fill_viridis_d() +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 64, hjust = 1)) +
-  labs(title = "Distribution des Categories de Vehicules", x = "Categorie", y = "Nombre de Vehicules")
+# Fonction pour afficher la distribution des catégories
+afficher_distribution_categories <- function(data, titre_graphique) {
+  ggplot(data, aes(x = factor(Categorie), fill = Categorie)) +
+    geom_bar() +
+    geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, color = "black") +
+    scale_fill_viridis_d() +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 64, hjust = 1)) +
+    labs(title = titre_graphique, x = "Categorie", y = "Nombre de Vehicules")
+}
+
+# Appliquer la fonction pour chaque dataframe
+afficher_distribution_categories(catalogue, "Distribution des Categories de Vehicules - Catalogue")
+afficher_distribution_categories(immatriculations, "Distribution des Categories de Vehicules - Immatriculations")
+
+
+echantillonner_et_visualiser <- function(data, titre) {
+  data_sampled <- data %>%
+    group_by(Categorie) %>%
+    sample_n(min(5, n()), replace = TRUE) %>%
+    ungroup()
+
+  ggplot(data_sampled, aes(x = Categorie, y = reorder(nom, Categorie))) +
+    geom_text(aes(label = nom), check_overlap = TRUE, hjust = 1, size = 3) +
+    scale_fill_viridis_d() +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = titre, x = "Categorie", y = "Nom du vehicule")
+}
+
+# Appliquer la fonction pour chaque ensemble de données
+echantillonner_et_visualiser(catalogue, "Noms des vehicules par categorie (Catalogue)")
+echantillonner_et_visualiser(immatriculations, "Noms des vehicules par categorie (Immatriculations)")
 
 # Fonction pour afficher les noms de véhicules par catégorie
 afficher_vehicules_par_categorie <- function(catalogue) {
@@ -83,28 +106,17 @@ afficher_vehicules_par_categorie <- function(catalogue) {
 
 # Appliquer la fonction pour afficher les noms de véhicules par catégorie
 afficher_vehicules_par_categorie(catalogue)
-
-catalogue_sampled <- catalogue %>%
-  group_by(Categorie) %>%
-  sample_n(min(5, n()), replace = TRUE) %>%
-  ungroup()
-
-# Créer le graphique
-ggplot(catalogue_sampled, aes(x = Categorie, y = reorder(nom, Categorie))) +
-  geom_text(aes(label = nom), check_overlap = TRUE, hjust = 1, size = 3) +
-  scale_fill_viridis_d() +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "Noms des vehicules par categorie", x = "Categorie", y = "Nom du vehicule")
-
-# ggplot(catalogue, aes(x = Categorie, y = reorder(nom, Categorie))) +
-#   geom_point(stat = "identity", aes(color = Categorie)) +
-#   scale_fill_viridis_d() +
-#   theme_minimal() +
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-#   labs(title = "Distribution des Categories de Vehicules", x = "Categorie", y = "Nom du Vehicule")
+afficher_vehicules_par_categorie(immatriculations)
 
 
-# Enregistrer le catalogue mis à jour dans un nouveau fichier CSV
-write.csv(catalogue, "data/cleaned/Catalogue_avec_categories.csv", row.names = FALSE)
+# Fonction pour enregistrer un dataframe dans un fichier CSV
+enregistrer_dataframe <- function(dataframe, file_name) {
+  data_path <- file.path(chemin_data, file_name)
+  write.csv(dataframe, file = data_path, row.names = FALSE)
+}
+
+# Utiliser la fonction pour enregistrer les dataframes
+enregistrer_dataframe(catalogue, "Catalogue_sans_accents_clean.csv")
+enregistrer_dataframe(immatriculations, "Immatriculations_sans_accents_clean.csv")
+
 
