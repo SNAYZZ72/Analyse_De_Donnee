@@ -4,13 +4,8 @@ packages_to_install <- packages_needed[!(packages_needed %in% installed.packages
 if(length(packages_to_install)) install.packages(packages_to_install)
 
 
-# Chargement des packages
-library(cluster)
-library(ggplot2)
-library(dplyr)
-library(rpart)
-library(rpart.plot)
-library(caret)
+# Chargement des packages avec lapply
+lapply(packages_needed, require, character.only = TRUE)
 
 # Chemin vers les données nettoyées
 chemin_data <- "data/cleaned"
