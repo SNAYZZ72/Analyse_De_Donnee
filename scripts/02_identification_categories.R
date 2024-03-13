@@ -46,8 +46,11 @@ selected_data <- data[, c("puissance", "longueur", "nbPlaces", "nbPortes", "prix
 # Normalisation des données
 normalized_data <- scale(selected_data)
 
+# Fixer le seed pour la reproductibilité
+set.seed(112)
+
 # Application de l'algorithme de clustering (K-means)
-k <- 5
+k <- 6
 clusters <- kmeans(normalized_data, centers=k)
 
 # Ajout des clusters à nos données
@@ -63,11 +66,11 @@ print(cluster_summary)
 # Visualisation des clusters
 ggplot(data, aes(x = puissance, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Puissance", y = "Prix") + theme_minimal()
 
-ggplot(data, aes(x = longueur, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Longueur", y = "Prix") + theme_minimal()
-
-ggplot(data, aes(x = nbPlaces, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de places", y = "Prix") + theme_minimal()
-
-ggplot(data, aes(x = nbPortes, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de portes", y = "Prix") + theme_minimal()
+# ggplot(data, aes(x = longueur, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Longueur", y = "Prix") + theme_minimal()
+#
+# ggplot(data, aes(x = nbPlaces, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de places", y = "Prix") + theme_minimal()
+#
+# ggplot(data, aes(x = nbPortes, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de portes", y = "Prix") + theme_minimal()
 
 
 # Construction de l'arbre de décision
