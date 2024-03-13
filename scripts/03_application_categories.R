@@ -30,27 +30,26 @@ load_data <- function(file_name) {
 # Charger les données nettoyées
 catalogue <- load_data("Catalogue_sans_accents_clean.csv")
 
+# Convertir la variable "longueur" en numérique
+# catalogue$longueur <- factor(data$longueur, levels = c("courte", "moyenne", "longue", "tres longue"), labels = c(1, 2, 3, 4))
+# catalogue$longueur <- as.numeric(as.character(data$longueur))
+
 # Fonction pour attribuer une catégorie
 attribuer_categorie_complexe <- function(catalogue) {
-  # Assurer que 'longueur' et 'puissance' sont au format correct (si nécessaire)
-  catalogue$longueur <- as.character(catalogue$longueur)
+  # Conversion des variables au format correct (si nécessaire)
   catalogue$puissance <- as.numeric(as.character(catalogue$puissance))
+  catalogue$nbPlaces <- as.numeric(as.character(catalogue$nbPlaces))
+  catalogue$nbPortes <- as.numeric(as.character(catalogue$nbPortes))
 
-  # Application des catégories en fonction de critères prédéfinis
+  # Application des catégories en fonction des règles de l'arbre de décision
   catalogue <- catalogue %>%
     mutate(Categorie = case_when(
-      # Cluster 1: Citadines compactes et abordables
-      (longueur == "courte" & puissance <= 120 & prix <= 15000) ~ "Citadine",
-      # Cluster 2: Berlines familiales puissantes et confortables
-      (longueur == "moyenne" & puissance > 120 & prix > 25000) ~ "Berline familiale",
-      # Cluster 3: Voitures compactes sportives et économiques
-      (longueur == "courte" & puissance > 120 & prix <= 25000) ~ "Compacte sportive",
-      # Cluster 4: Voitures de sport puissantes et luxueuses
-      (longueur == "longue" & puissance > 250 & prix > 50000) ~ "Voiture de sport",
-      # Cluster 5: Monospaces familiaux spacieux et abordables
-      (longueur == "longue" & puissance <= 250 & nbPlaces >= 7) ~ "Monospace",
-      # Cas par défaut
-      TRUE ~ "Inconnu"
+      puissance >= 223 ~ "Voitures de sport puissantes et luxueuses",  # Catégorie
+      puissance < 223 & nbPortes >= 4 ~ "Monospaces familiaux spacieux et abordables",  # Catégorie 2
+      puissance < 223 & nbPortes < 4 & nbPlaces < 6 ~ "Voitures compactes sportives et economiques",  # Catégorie 5
+      puissance < 223 & nbPortes < 4 & nbPlaces >= 6 & puissance >= 138 ~ "Berlines familiales puissantes et confortables",  # Catégorie 4
+      puissance < 223 & nbPortes < 4 & nbPlaces >= 6 & puissance < 138 ~ "Citadines compactes et abordables",  # Catégorie 3
+      TRUE ~ "Autres"  # Pour tout ce qui ne correspond pas aux règles ci-dessus
     ))
   return(catalogue)
 }
