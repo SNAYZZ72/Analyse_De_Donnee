@@ -29,7 +29,6 @@ immatriculations$longueur <- factor(immatriculations$longueur, levels = c("court
 immatriculations$longueur <- as.numeric(as.character(immatriculations$longueur))
 
 
-
 immatriculations$prix <- as.numeric(as.character(immatriculations$prix))
 
 # Valeur test
