@@ -26,6 +26,9 @@ immatriculations <- load_data("Immatriculations_categorie.csv")
 # Charger les données clients
 clients <- load_data("Clients_7_sans_accents_clean.csv")
 
+doublons <- which(duplicated(immatriculations$immatriculation))
+immatri_doublons <- immatriculations[doublons,]
+
 # Assurez-vous que la colonne immatriculation est une chaîne de caractères dans les deux data frames
 immatriculations$immatriculation <- as.character(immatriculations$immatriculation)
 clients$immatriculation <- as.character(clients$immatriculation)
