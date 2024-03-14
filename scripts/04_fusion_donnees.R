@@ -30,7 +30,6 @@ clients12 <- load_data("Clients_12_sans_accents_clean.csv")
 # Fusionner les données clients
 clients <- rbind(clients7, clients12)
 
-
 # Fusionner les données mais on garde que les immatriculations qui ont des clients
 merged_data <- merge(clients, immatriculations, by = "immatriculation")
 
