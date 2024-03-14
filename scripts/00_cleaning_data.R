@@ -146,7 +146,7 @@ clean_data <- function(file_name) {
 }
 
 # Liste des fichiers à nettoyer
-files_to_clean <- c("Catalogue_sans_accents.csv", "Clients_7_sans_accents.csv", "Clients_12_sans_accents.csv", "Marketing_sans_accents.csv", "Immatriculations_sans_accents.csv")
+files_to_clean <- c("Catalogue_sans_accents.csv", "Immatriculations_sans_accents.csv")
 
 # Application du nettoyage
 lapply(files_to_clean, clean_data)
