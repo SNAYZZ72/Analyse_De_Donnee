@@ -64,14 +64,20 @@ cluster_summary <- data %>%
 print(cluster_summary)
 
 # Visualisation des clusters
-ggplot(data, aes(x = puissance, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Puissance", y = "Prix") + theme_minimal()
+visualiser_clusters <- function(data, aes_x, aes_y, titre) {
+  ggplot(data, aes_string(x = aes_x, y = aes_y, color = "factor(cluster)")) +
+    geom_point() +
+    labs(title = titre, x = aes_x, y = aes_y) +
+    theme_minimal()
+}
 
-# ggplot(data, aes(x = longueur, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Longueur", y = "Prix") + theme_minimal()
-#
-# ggplot(data, aes(x = nbPlaces, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de places", y = "Prix") + theme_minimal()
-#
-# ggplot(data, aes(x = nbPortes, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de portes", y = "Prix") + theme_minimal()
+visualiser_clusters(catalogue_pretraite$data, "puissance", "prix", "Clustering des voitures")
 
+# visualiser_clusters(catalogue_pretraite$data, "longueur", "prix", "Clustering des voitures")
+#
+# visualiser_clusters(catalogue_pretraite$data, "nbPlaces", "prix", "Clustering des voitures")
+#
+# visualiser_clusters(catalogue_pretraite$data, "nbPortes", "prix", "Clustering des voitures")
 
 # Construction de l'arbre de décision
 data$cluster <- as.factor(data$cluster)
