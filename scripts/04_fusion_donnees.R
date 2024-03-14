@@ -27,11 +27,29 @@ immatriculations <- load_data("Immatriculations_categorie.csv")
 clients7 <- load_data("Clients_7_sans_accents_clean.csv")
 clients12 <- load_data("Clients_12_sans_accents_clean.csv")
 
+# Vérification rapide pour s'assurer de la compatibilité des colonnes
+if (!identical(names(clients_7), names(clients_12))) {
+  stop("Les colonnes des deux ensembles de données clients ne correspondent pas.")
+}
+
 # Fusionner les données clients
 clients <- rbind(clients7, clients12)
+
+# Vérification des noms de colonnes pour trouver une clé de fusion commune
+print(names(immatriculations))
+print(names(clients))
 
 # Fusionner les données mais on garde que les immatriculations qui ont des clients
 merged_data <- merge(clients, immatriculations, by = "immatriculation")
 
+# Afficher les 6 premières lignes
+head(merged_data)
+
+# Enregistrer les données fusionnées
+enregistrer_dataframe <- function(dataframe, file_name) {
+  data_path <- file.path(chemin_data, file_name)
+  write.csv(dataframe, file = data_path, row.names = FALSE, quote = FALSE)
+}
+
 # on enregistre les données
-write.csv(merged_data, file = "data/cleaned/Donnees_Fusionnees.csv", row.names = FALSE)
+enregistrer_dataframe(merged_data, "Donnees_Fusionnees.csv")
