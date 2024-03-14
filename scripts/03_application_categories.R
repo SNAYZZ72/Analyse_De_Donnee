@@ -31,8 +31,9 @@ immatriculations$longueur <- as.numeric(as.character(immatriculations$longueur))
 
 immatriculations$prix <- as.numeric(as.character(immatriculations$prix))
 
-# On ajoute une ligne de test dans le fichier pour voir si tous les clusters sont reconnus. Voici la ligne à ajouter: "9999 AZ 99","Audi","A2 1.4",75,1,5,7,"gris",FALSE,30000
-immatriculations <- rbind(immatriculations, data.table(immatriculation = "9999 AZ 99", marque = "Audi", nom = "test", puissance = 75, longueur = 3, nbPlaces = 7, nbPortes = 7, couleur = "gris", occasion = FALSE, prix = 30000))
+# Valeur test
+immatriculations <- rbind(immatriculations, data.table(immatriculation = "9999 AZ 99", marque = "Audi",
+nom = "test", puissance = 75, longueur = 3, nbPlaces = 7, nbPortes = 7, couleur = "gris", occasion = FALSE, prix = 30000))
 
 
 # Fonction pour attribuer une catégorie plus efficacement
@@ -41,11 +42,12 @@ attribuer_categorie_complexe <- function(data) {
     data <- data %>%
         mutate(
         Categorie = case_when(
-            longueur < 3 & nbPortes >= 4 ~ "Citadines compactes et abordables",
-            longueur < 3 & nbPortes < 4 ~ "Berlines familiales puissantes et confortables",
-            longueur >= 3 & nbPlaces >= 6 ~ "Monospaces familiaux spacieux et abordables",
-            longueur >= 3 & nbPlaces < 6 & puissance < 289 ~ "Compactes sportives et economiques",
-            longueur >= 3 & nbPlaces < 6 & puissance >= 289 ~ "Sport puissantes et luxueuses",
+            longueur < 3 & nbPortes >= 4 ~ "Petites Voitures Urbaines",
+            longueur < 3 & nbPortes < 4 ~ "Citadines Economiques",
+            longueur >= 3 & longueur < 4 & nbPlaces >= 6 ~ "Monospaces familiaux spacieux et abordables",
+            longueur >= 3 & longueur < 4 & nbPlaces < 6 ~ "Berlines Moyennes",
+            longueur >= 3 & longueur >= 4 & puissance < 289 ~ "Sportive et premium",
+            longueur >= 3 & longueur >= 4 & puissance >= 289 ~ "Luxueuses",
             TRUE ~ "non classe"
         )
         )
