@@ -55,3 +55,41 @@ rapport <- paste("Rapport du modèle Random Forest :\n",
 "No. of variables tried at each split: ", model_rf$mtry, "\n")
 
 writeLines(rapport, file.path(chemin_reports, "rapport_rf.txt"))
+
+
+# Génération d'un rapport plus complet (exemple)
+rapport_complet <- capture.output(print(model_rf))
+writeLines(rapport_complet, file.path(chemin_reports, "rapport_rf_complet.txt"))
+
+# Génération d'un graphique
+pdf(file.path(chemin_reports, "importance_variables.pdf"))
+varImpPlot(model_rf, type = 2)
+dev.off()
+
+# Continuer avec la boucle de modélisation comme précédemment
+for(model_name in c("glm", "svmRadial", "knn", "nnet")) {
+  set.seed(123)
+  model <- train(Categorie ~ ., data = trainData, method = model_name, trControl = fitControl, preProcess = c("center", "scale"), tuneLength = 5)
+  predictions <- predict(model, testData)
+  confMatrix <- confusionMatrix(predictions, testData$Categorie)
+
+  # Sauvegarder le modèle
+  saveRDS(model, file.path(chemin_models, paste0(model_name, "_model.rds")))
+
+  # Sauvegarder les prédictions
+  write.csv(predictions, file.path(chemin_results, paste0(model_name, "_predictions.csv")), row.names = FALSE)
+
+  # Sauvegarder la matrice de confusion dans un fichier texte
+  capture.output(confMatrix, file = file.path(chemin_reports, paste0(model_name, "_confMatrix.txt")))
+
+  # Stocker les résultats pour comparaison future
+  results[[model_name]] <- list(model = model, confMatrix = confMatrix)
+
+  # Afficher un résumé des performances pour le modèle courant
+  print(paste("Résultats pour le modèle:", model_name))
+  print(confMatrix)
+}
+
+# Générer un rapport comparatif des performances
+report <- lapply(results, function(x) x$confMatrix$overall['Accuracy'])
+write.csv(do.call(rbind, report), file.path(chemin_reports, "model_comparisons.csv"), row.names = TRUE)
