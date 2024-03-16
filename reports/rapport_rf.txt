@@ -1,5 +1,0 @@
-Rapport du mod<e8>le Random Forest :
- Accuracy:  1 
- 95% CI:  0.999765380911111-1 
- No. of variables tried at each split:  4 
-

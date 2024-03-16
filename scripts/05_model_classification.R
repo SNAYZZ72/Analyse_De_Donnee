@@ -1,12 +1,12 @@
-# Vérification et installation des packages nécessaires
-packages_needed <- c("dplyr", "readr", "randomForest", "caret")
-new_packages <- packages_needed[!packages_needed %in% installed.packages()[,"Package"]]
-if(length(new_packages)) install.packages(new_packages)
+# Chargement des packages nécessaires
+packages_needed <- c("dplyr", "readr", "randomForest", "caret", "e1071", "nnet", "keras")
+new_packages <- packages_needed[!packages_needed %in% installed.packages()[, "Package"]]
+if (length(new_packages)) install.packages(new_packages)
 
 # Chargement des packages avec lapply
 lapply(packages_needed, require, character.only = TRUE)
 
-# Chemin vers les données
+# Définition des chemins
 chemin_data <- "data/cleaned"
 chemin_models <- "models"
 chemin_results <- "results"
@@ -14,82 +14,60 @@ chemin_reports <- "reports"
 
 # Fonction pour charger des données
 load_data <- function(file_name) {
-data_path <- file.path(chemin_data, file_name)
-if(!file.exists(data_path)) {
-stop("Le fichier ", data_path, " n'existe pas.")
-}
-data <- read_csv(data_path)
-return(data)
+  data_path <- file.path(chemin_data, file_name)
+  if (!file.exists(data_path)) {
+    stop("Le fichier ", data_path, " n'existe pas.")
+  }
+  data <- read_csv(data_path)
+  return(data)
 }
 
-# Charger les données fusionnées
+# Chargement des données fusionnées
 donnees_fusionnees <- load_data("Donnees_Fusionnees.csv")
-
-# Préparation des données
 donnees_fusionnees$Categorie <- as.factor(donnees_fusionnees$Categorie)
 
 # Séparation des données en ensembles d'entraînement et de test
-set.seed(123) # Pour la reproductibilité
-index <- createDataPartition(donnees_fusionnees$Categorie, p=0.8, list=FALSE)
-trainData <- donnees_fusionnees[index, ]
-testData <- donnees_fusionnees[-index, ]
+set.seed(123)
+index <- createDataPartition(donnees_fusionnees$Categorie, p = 0.8, list = FALSE)
+trainData <- donnees_fusionnees[index,]
+testData <- donnees_fusionnees[-index,]
 
-# Entraînement du modèle Random Forest
-model_rf <- randomForest(Categorie ~ ., data = trainData, ntree = 100)
+# Liste pour stocker les résultats des modèles
+model_results <- list()
 
-# Prédiction sur l'ensemble de test
-predictions <- predict(model_rf, testData)
-
-# Évaluation du modèle et sauvegarde des résultats
-conf_mat <- confusionMatrix(predictions, testData$Categorie)
-print(conf_mat)
-write.csv(conf_mat$table, file.path(chemin_results, "confusion_matrix.csv"), row.names = FALSE)
-
-# Sauvegarde du modèle entraîné
-saveRDS(model_rf, file.path(chemin_models, "random_forest_model.rds"))
-
-# Génération d'un rapport simple (exemple)
-rapport <- paste("Rapport du modèle Random Forest :\n",
-"Accuracy: ", conf_mat$overall['Accuracy'], "\n",
-"95% CI: ", paste(conf_mat$overall['AccuracyLower'], conf_mat$overall['AccuracyUpper'], sep = "-"), "\n",
-"No. of variables tried at each split: ", model_rf$mtry, "\n")
-
-writeLines(rapport, file.path(chemin_reports, "rapport_rf.txt"))
-
-
-# Génération d'un rapport plus complet (exemple)
-rapport_complet <- capture.output(print(model_rf))
-writeLines(rapport_complet, file.path(chemin_reports, "rapport_rf_complet.txt"))
-
-# Génération d'un graphique
-pdf(file.path(chemin_reports, "importance_variables.pdf"))
-varImpPlot(model_rf, type = 2)
-dev.off()
-
-# Continuer avec la boucle de modélisation comme précédemment
-for(model_name in c("glm", "svmRadial", "knn", "nnet")) {
-  set.seed(123)
-  model <- train(Categorie ~ ., data = trainData, method = model_name, trControl = fitControl, preProcess = c("center", "scale"), tuneLength = 5)
+# Fonction pour évaluer et comparer les modèles
+evaluate_model <- function(model, testData, modelName) {
   predictions <- predict(model, testData)
-  confMatrix <- confusionMatrix(predictions, testData$Categorie)
+  conf_mat <- confusionMatrix(predictions, testData$Categorie)
+  model_results[[modelName]] <- conf_mat
+  write.csv(conf_mat$table, file.path(chemin_results, paste0("confusion_matrix_", modelName, ".csv")), row.names = FALSE)
 
-  # Sauvegarder le modèle
-  saveRDS(model, file.path(chemin_models, paste0(model_name, "_model.rds")))
 
-  # Sauvegarder les prédictions
-  write.csv(predictions, file.path(chemin_results, paste0(model_name, "_predictions.csv")), row.names = FALSE)
+  rapport <- paste0("Rapport pour ", modelName, ":\n", "Accuracy: ", round(conf_mat$overall['Accuracy'], 4), "\n", "95% CI: ", paste0(round(conf_mat$overall['AccuracyLower'], 4), "-", round(conf_mat$overall['AccuracyUpper'], 4)), "\n", "Kappa: ", round(conf_mat$overall['Kappa'], 4), "\n", "Sensibilite (Recall): ", paste(round(conf_mat$byClass['Sensitivity'], 4), collapse = ", "), "\n", "Specificite: ", paste(round(conf_mat$byClass['Specificity'], 4), collapse = ", "), "\n", "Precision (Precision): ", paste(round(conf_mat$byClass['Pos Pred Value'], 4), collapse = ", "), "\n", "F1 Score: ", paste(round(conf_mat$byClass['F1'], 4), collapse = ", "), "\n")
 
-  # Sauvegarder la matrice de confusion dans un fichier texte
-  capture.output(confMatrix, file = file.path(chemin_reports, paste0(model_name, "_confMatrix.txt")))
+  # Sauvegarde du rapport dans un fichier
+  rapport_path <- file.path(chemin_reports, paste0("rapport_complet_", modelName, ".txt"))
+  writeLines(rapport, rapport_path)
 
-  # Stocker les résultats pour comparaison future
-  results[[model_name]] <- list(model = model, confMatrix = confMatrix)
-
-  # Afficher un résumé des performances pour le modèle courant
-  print(paste("Résultats pour le modèle:", model_name))
-  print(confMatrix)
+  return(conf_mat)
 }
 
-# Générer un rapport comparatif des performances
-report <- lapply(results, function(x) x$confMatrix$overall['Accuracy'])
-write.csv(do.call(rbind, report), file.path(chemin_reports, "model_comparisons.csv"), row.names = TRUE)
+# # Modèle Random Forest
+model_rf <- randomForest(Categorie ~ ., data = trainData, ntree = 100)
+evaluate_model(model_rf, testData, "random_forest")
+saveRDS(model_rf, file.path(chemin_models, "random_forest_model.rds"))
+
+# Modèle SVM
+# model_svm <- svm(Categorie ~ ., data = trainData)
+# evaluate_model(model_svm, testData, "svm")
+# saveRDS(model_svm, file.path(chemin_models, "svm_model.rds"))
+
+# Modèle Réseau de neurones
+# model_nn <- nnet(Categorie ~ ., data = trainData, size = 10, maxit = 1000)
+# evaluate_model(model_nn, testData, "neural_network")
+# saveRDS(model_nn, file.path(chemin_models, "neural_network_model.rds"))
+
+# model_logit <- multinom(Categorie ~ ., data=trainData)
+# evaluate_model(model_logit, testData, "logistic_regression")
+# saveRDS(model_logit, file.path(chemin_models, "logistic_regression_model.rds"))
+
