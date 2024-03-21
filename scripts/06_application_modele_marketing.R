@@ -1,6 +1,7 @@
 # Application du modèle de prédiction aux données Marketing
+
 # Chargement des packages nécessaires
-packages_needed <- c("readr", "randomForest", "caret")
+packages_needed <- c("readr", "randomForest", "caret", "rmarkdown")
 new_packages <- packages_needed[!packages_needed %in% installed.packages()[, "Package"]]
 if (length(new_packages)) install.packages(new_packages)
 
@@ -26,24 +27,20 @@ load_data <- function(file_name) {
 # Chargement des données
 donnees_marketing <- load_data("Marketing_sans_accents_clean.csv")
 
-# # Chargement du modèle Random Forest
-# model_rf <- readRDS(file.path(chemin_models, "random_forest_model.rds"))
-#
-# # Prédiction des catégories
-# predictions <- predict(model_rf, donnees_marketing)
-#
-# # Ajout des prédictions au jeu de données
-# donnees_marketing$Categorie <- predictions
+# application du modèle de prédiction
+# Chargement du modèle
+model_path <- file.path(chemin_models, "decision_tree_model.rds")
+model <- readRDS(model_path)
 
-donnees_marketing_prepared <- donnees_marketing # Remplacer cette ligne par les étapes de préparation réelles
+# Prédiction sur les données de marketing
+predictions <- predict(model, donnees_marketing, type = "class")
 
-# Prédiction des catégories de véhicules pour les données marketing
-predictions_marketing <- predict(model_rf, donnees_marketing_prepared)
+# Ajout des prédictions aux données
+donnees_marketing$Categorie <- predictions
 
-# Sauvegarde des données avec les prédictions
-write.csv(data.frame(Client = donnees_marketing$Client, Categorie_Predite = predictions_marketing),
-          file.path(chemin_results, "predictions_marketing.csv"), row.names = FALSE)
+# Enregistrement des données avec les prédictions
+data_path <- file.path(chemin_results, "Marketing_with_predictions.csv")
+write_csv(donnees_marketing, data_path)
 
-head(predictions_marketing)
-head(predictions_marketing)
-
+# afficher les 6 premières lignes
+head(donnees_marketing)

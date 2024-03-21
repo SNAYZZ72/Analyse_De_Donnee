@@ -27,7 +27,7 @@ test_data <- data[-train_indices, ]
 fit <- rpart(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
              data = train_data,
              method = "class",
-             cp = 0.001)  # Nombre maximum de variables à considérer pour une division
+             cp = 0.001)
 
 # Visualisation de l'arbre de décision
 rpart.plot(fit, extra = 102, under = TRUE, cex = 0.8, tweak = 1.5,
@@ -58,8 +58,11 @@ print(paste("Accuracy:", accuracy))
 library(ggplot2)
 ggplot(var_importance_df, aes(x = reorder(Variable, Importance), y = Importance)) +
   geom_bar(stat = "identity", fill = "steelblue") +
-  coord_flip() + # Pour une meilleure lisibilité
+  coord_flip() +
   labs(title = "Importance des Variables dans l'Arbre de Decision",
        x = "Variables",
        y = "Importance") +
   theme_minimal()
+
+# Sauvegarde du modèle
+saveRDS(fit, "models/decision_tree_model.rds")
