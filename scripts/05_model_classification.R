@@ -1,73 +1,65 @@
-# Chargement des packages nécessaires
-packages_needed <- c("dplyr", "readr", "randomForest", "caret", "e1071", "nnet", "keras")
-new_packages <- packages_needed[!packages_needed %in% installed.packages()[, "Package"]]
-if (length(new_packages)) install.packages(new_packages)
+# Vérification et installation des packages nécessaires
+packages_needed <- c("rpart", "rpart.plot", "caret", "dplyr")
+packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
+if(length(packages_to_install)) install.packages(packages_to_install)
 
-# Chargement des packages avec lapply
-lapply(packages_needed, require, character.only = TRUE)
+# Chargement des packages
+library(rpart)
+library(rpart.plot)
+library(caret)
+library(dplyr)
 
-# Définition des chemins
-chemin_data <- "data/cleaned"
-chemin_models <- "models"
-chemin_results <- "results"
-chemin_reports <- "reports"
+# Charger les données des clients et des voitures
+data <- read.csv("data/cleaned/Donnees_Fusionnees.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
-# Fonction pour charger des données
-load_data <- function(file_name) {
-  data_path <- file.path(chemin_data, file_name)
-  if (!file.exists(data_path)) {
-    stop("Le fichier ", data_path, " n'existe pas.")
-  }
-  data <- read_csv(data_path)
-  return(data)
-}
+# Nettoyage des données
+# Par exemple, conversion de certaines variables en facteurs si nécessaire
+data$sexe <- factor(data$sexe)
+data$situationFamiliale <- factor(data$situationFamiliale)
 
-# Chargement des données fusionnées
-donnees_fusionnees <- load_data("Donnees_Fusionnees.csv")
-donnees_fusionnees$Categorie <- as.factor(donnees_fusionnees$Categorie)
-
-# Séparation des données en ensembles d'entraînement et de test
+# Diviser les données en ensemble d'entraînement et ensemble de test
 set.seed(123)
-index <- createDataPartition(donnees_fusionnees$Categorie, p = 0.8, list = FALSE)
-trainData <- donnees_fusionnees[index,]
-testData <- donnees_fusionnees[-index,]
+train_indices <- createDataPartition(data$Categorie, p = 0.7, list = FALSE)
+train_data <- data[train_indices, ]
+test_data <- data[-train_indices, ]
 
-# Liste pour stocker les résultats des modèles
-model_results <- list()
+# Construction de l'arbre de décision avec des paramètres ajustés
+fit <- rpart(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
+             data = train_data,
+             method = "class",
+             cp = 0.001)  # Nombre maximum de variables à considérer pour une division
 
-# Fonction pour évaluer et comparer les modèles
-evaluate_model <- function(model, testData, modelName) {
-  predictions <- predict(model, testData)
-  conf_mat <- confusionMatrix(predictions, testData$Categorie)
-  model_results[[modelName]] <- conf_mat
-  write.csv(conf_mat$table, file.path(chemin_results, paste0("confusion_matrix_", modelName, ".csv")), row.names = FALSE)
+# Visualisation de l'arbre de décision
+rpart.plot(fit, extra = 102, under = TRUE, cex = 0.8, tweak = 1.5,
+           fallen.leaves = TRUE, type = 3, shadow.col = "gray", nn = TRUE,
+           yesno = 2, box.palette = "RdYlGn")
 
 
-  rapport <- paste0("Rapport pour ", modelName, ":\n", "Accuracy: ", round(conf_mat$overall['Accuracy'], 4), "\n", "95% CI: ", paste0(round(conf_mat$overall['AccuracyLower'], 4), "-", round(conf_mat$overall['AccuracyUpper'], 4)), "\n", "Kappa: ", round(conf_mat$overall['Kappa'], 4), "\n", "Sensibilite (Recall): ", paste(round(conf_mat$byClass['Sensitivity'], 4), collapse = ", "), "\n", "Specificite: ", paste(round(conf_mat$byClass['Specificity'], 4), collapse = ", "), "\n", "Precision (Precision): ", paste(round(conf_mat$byClass['Pos Pred Value'], 4), collapse = ", "), "\n", "F1 Score: ", paste(round(conf_mat$byClass['F1'], 4), collapse = ", "), "\n")
 
-  # Sauvegarde du rapport dans un fichier
-  rapport_path <- file.path(chemin_reports, paste0("rapport_complet_", modelName, ".txt"))
-  writeLines(rapport, rapport_path)
 
-  return(conf_mat)
-}
+# Extraction de l'importance des variables
+var_importance <- fit$variable.importance
 
-# # Modèle Random Forest
-model_rf <- randomForest(Categorie ~ ., data = trainData, ntree = 100)
-evaluate_model(model_rf, testData, "random_forest")
-saveRDS(model_rf, file.path(chemin_models, "random_forest_model.rds"))
+# Transformation en data frame pour ggplot2
+var_importance_df <- as.data.frame(var_importance)
+var_importance_df$Variable <- rownames(var_importance_df)
+var_importance_df$Importance <- var_importance_df$var_importance
+var_importance_df <- var_importance_df[ , -1] # Enlever la colonne originale
 
-# Modèle SVM
-# model_svm <- svm(Categorie ~ ., data = trainData)
-# evaluate_model(model_svm, testData, "svm")
-# saveRDS(model_svm, file.path(chemin_models, "svm_model.rds"))
 
-# Modèle Réseau de neurones
-# model_nn <- nnet(Categorie ~ ., data = trainData, size = 10, maxit = 1000)
-# evaluate_model(model_nn, testData, "neural_network")
-# saveRDS(model_nn, file.path(chemin_models, "neural_network_model.rds"))
+# Prédiction sur l'ensemble de test
+predictions <- predict(fit, test_data, type = "class")
 
-# model_logit <- multinom(Categorie ~ ., data=trainData)
-# evaluate_model(model_logit, testData, "logistic_regression")
-# saveRDS(model_logit, file.path(chemin_models, "logistic_regression_model.rds"))
+# Évaluation de la précision
+accuracy <- sum(predictions == test_data$Categorie) / length(predictions)
+print(paste("Accuracy:", accuracy))
 
+# Création du graphique d'importance des variables avec ggplot2
+library(ggplot2)
+ggplot(var_importance_df, aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() + # Pour une meilleure lisibilité
+  labs(title = "Importance des Variables dans l'Arbre de Decision",
+       x = "Variables",
+       y = "Importance") +
+  theme_minimal()

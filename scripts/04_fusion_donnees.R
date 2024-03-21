@@ -21,7 +21,8 @@ load_data <- function(file_name) {
 }
 
 # Charger les données d'immatriculations
-immatriculations <- load_data("Immatriculations_categorie.csv")
+immatriculations <- load_data("Immatriculations_categorie.csv") %>%
+  select(immatriculation, Categorie)
 
 # Charger les données clients
 clients7 <- load_data("Clients_7_sans_accents_clean.csv")
