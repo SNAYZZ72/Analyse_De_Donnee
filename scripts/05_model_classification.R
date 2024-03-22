@@ -18,8 +18,8 @@ data$sexe <- factor(data$sexe)
 data$situationFamiliale <- factor(data$situationFamiliale)
 
 # Diviser les données en ensemble d'entraînement et ensemble de test
-set.seed(123)
-train_indices <- createDataPartition(data$Categorie, p = 0.7, list = FALSE)
+set.seed(12345)
+train_indices <- createDataPartition(data$Categorie, p = 0.8, list = FALSE)
 train_data <- data[train_indices, ]
 test_data <- data[-train_indices, ]
 
@@ -27,13 +27,20 @@ test_data <- data[-train_indices, ]
 fit <- rpart(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
              data = train_data,
              method = "class",
-             cp = 0.001)
+             cp = 0.0001)
+
+
 
 # Visualisation de l'arbre de décision
-rpart.plot(fit, extra = 102, under = TRUE, cex = 0.8, tweak = 1.5,
+rpart.plot(fit, extra = 102, under = TRUE, cex = 0.8, tweak = 1.2,
            fallen.leaves = TRUE, type = 3, shadow.col = "gray", nn = TRUE,
            yesno = 2, box.palette = "RdYlGn")
 
+# # Visualisation de l'arbre de décision avec une police d'écriture moyenne
+# rpart.plot(fit, extra = 101, fallen.leaves = TRUE, type = 0, under = TRUE, faclen = 0, cex = 0.8)
+#
+# # Visualisation de l'arbre de décision avec une police d'écriture plus grande
+# rpart.plot(fit, extra = 101, fallen.leaves = TRUE, type = 0, under = TRUE, faclen = 0, cex = 1.2)
 
 
 
@@ -63,6 +70,7 @@ ggplot(var_importance_df, aes(x = reorder(Variable, Importance), y = Importance)
        x = "Variables",
        y = "Importance") +
   theme_minimal()
+
 
 # Sauvegarde du modèle
 saveRDS(fit, "models/decision_tree_model.rds")
