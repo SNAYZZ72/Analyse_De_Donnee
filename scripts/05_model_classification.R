@@ -1,5 +1,5 @@
 # Vérification et installation des packages nécessaires
-packages_needed <- c("rpart", "rpart.plot", "caret", "dplyr", "readr", "data.table", "ggplot2", "randomForest", "nnet", "e1071", "MASS", "nnet", "rmarkdown", "keras", "tensorflow", "kerasformula", "kerasR")
+packages_needed <- c("rpart", "rpart.plot", "caret", "dplyr", "readr", "data.table", "ggplot2", "randomForest", "nnet", "e1071", "MASS", "nnet", "rmarkdown")
 packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
 if(length(packages_to_install)) install.packages(packages_to_install)
 
