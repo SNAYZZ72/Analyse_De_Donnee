@@ -1,5 +1,5 @@
 # Vérification et installation des packages nécessaires
-packages_needed <- c("rpart", "rpart.plot", "caret", "dplyr", "readr", "data.table", "ggplot2", "randomForest", "nnet", "e1071", "MASS", "nnet", "rmarkdown")
+packages_needed <- c("rpart", "rpart.plot", "caret", "dplyr", "readr", "data.table", "ggplot2", "randomForest", "nnet", "e1071", "MASS", "nnet", "rmarkdown", "keras", "tensorflow", "kerasformula", "kerasR")
 packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
 if(length(packages_to_install)) install.packages(packages_to_install)
 
@@ -125,6 +125,8 @@ write.csv(confusion_matrix_glm_multinom, file.path(chemin_results, "confusion_ma
 # Sauvegarde du modèle de Régression Logistique Multinomiale
 saveRDS(fit_glm_multinom, file.path(chemin_models, "logistic_regression_multinom_model.rds"))
 
+gc()
+
 # SVM
 fit_svm <- svm(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
                 data = train_data,
@@ -133,9 +135,6 @@ fit_svm <- svm(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAch
 
 # Prédiction sur l'ensemble de test
 predictions_svm <- predict(fit_svm, newdata = test_data)
-
-# Visualisation des vecteurs de support
-plot(fit_svm, train_data, Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture)
 
 # Évaluation de la précision de la SVM
 accuracy_svm <- sum(predictions_svm == test_data$Categorie) / nrow(test_data)
@@ -151,23 +150,25 @@ write.csv(confusion_matrix_svm, file.path(chemin_results, "confusion_matrix_svm.
 # Sauvegarde du modèle de SVM
 saveRDS(fit_svm, file.path(chemin_models, "svm_model.rds"))
 
+gc()
+
 # random forest
-# fit_rf <- randomForest(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
-#                        data = train_data,
-#                        ntree = 500, # Nombre d'arbres
-#                        importance = TRUE, # Calcul de l'importance des variables
-#                        method = "class")
-#
-# # Évaluation de la précision des Forêts Aléatoires
-# predictions_rf <- predict(fit_rf, test_data)
-# accuracy_rf <- sum(predictions_rf == test_data$Categorie) / length(predictions_rf)
-# print(paste("Accuracy for Random Forest:", accuracy_rf))
-#
-# # Matrice de confusion pour les Forêts Aléatoires
-# confusion_matrix_rf <- table(predictions_rf, test_data$Categorie)
-# print("Matrice de Confusion pour Random Forest:")
-# print(confusion_matrix_rf)
-# # Sauvegarde de la matrice de confusion
-# write.csv(confusion_matrix_rf, file.path(chemin_results, "confusion_matrix_random_forest.csv"))
+fit_rf <- randomForest(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
+                       data = train_data,
+                       ntree = 500, # Nombre d'arbres
+                       importance = TRUE, # Calcul de l'importance des variables
+                       method = "class")
+
+# Évaluation de la précision des Forêts Aléatoires
+predictions_rf <- predict(fit_rf, test_data)
+accuracy_rf <- sum(predictions_rf == test_data$Categorie) / length(predictions_rf)
+print(paste("Accuracy for Random Forest:", accuracy_rf))
+
+# Matrice de confusion pour les Forêts Aléatoires
+confusion_matrix_rf <- table(predictions_rf, test_data$Categorie)
+print("Matrice de Confusion pour Random Forest:")
+print(confusion_matrix_rf)
+# Sauvegarde de la matrice de confusion
+write.csv(confusion_matrix_rf, file.path(chemin_results, "confusion_matrix_random_forest.csv"))
 
 # Fin du script
