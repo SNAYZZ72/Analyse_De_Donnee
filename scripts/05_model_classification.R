@@ -30,6 +30,8 @@ data <- load_data("Donnees_Fusionnees.csv")
 # Par exemple, conversion de certaines variables en facteurs si nécessaire
 data$sexe <- factor(data$sexe)
 data$situationFamiliale <- factor(data$situationFamiliale)
+data$Categorie <- factor(data$Categorie)
+
 
 # Diviser les données en ensemble d'entraînement et ensemble de test
 set.seed(12345)
@@ -99,8 +101,7 @@ ggplot(var_importance_df, aes(x = reorder(Variable, Importance), y = Importance)
 # Sauvegarde du modèle
 saveRDS(fit, "models/decision_tree_model.rds")
 
-train_data$Categorie <- as.factor(train_data$Categorie)
-test_data$Categorie <- as.factor(test_data$Categorie)
+gc()
 
 # Regression Logistique
 fit_glm_multinom <- multinom(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
@@ -152,23 +153,60 @@ saveRDS(fit_svm, file.path(chemin_models, "svm_model.rds"))
 
 gc()
 
-# random forest
-fit_rf <- randomForest(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
-                       data = train_data,
-                       ntree = 500, # Nombre d'arbres
-                       importance = TRUE, # Calcul de l'importance des variables
-                       method = "class")
+# # random forest
+# fit_rf <- randomForest(Categorie ~ age + sexe + taux + situationFamiliale + nbEnfantsAcharge + X2eme.voiture,
+#                        data = train_data,
+#                        ntree = 500,
+#                        importance = TRUE,
+#                        method = "class")
+#
+# # Évaluation de la précision des Forêts Aléatoires
+# predictions_rf <- predict(fit_rf, test_data)
+# accuracy_rf <- sum(predictions_rf == test_data$Categorie) / length(predictions_rf)
+# print(paste("Accuracy for Random Forest:", accuracy_rf))
+#
+# # Matrice de confusion pour les Forêts Aléatoires
+# confusion_matrix_rf <- table(predictions_rf, test_data$Categorie)
+# print("Matrice de Confusion pour Random Forest:")
+# print(confusion_matrix_rf)
+# # Sauvegarde de la matrice de confusion
+# write.csv(confusion_matrix_rf, file.path(chemin_results, "confusion_matrix_random_forest.csv"))
+#
+# # Sauvegarde du modèle de Forêts Aléatoires
+# saveRDS(fit_rf, file.path(chemin_models, "random_forest_model.rds"))
+# Suppression de la colonne 'immatriculation'
 
-# Évaluation de la précision des Forêts Aléatoires
-predictions_rf <- predict(fit_rf, test_data)
-accuracy_rf <- sum(predictions_rf == test_data$Categorie) / length(predictions_rf)
-print(paste("Accuracy for Random Forest:", accuracy_rf))
 
-# Matrice de confusion pour les Forêts Aléatoires
-confusion_matrix_rf <- table(predictions_rf, test_data$Categorie)
-print("Matrice de Confusion pour Random Forest:")
-print(confusion_matrix_rf)
-# Sauvegarde de la matrice de confusion
-write.csv(confusion_matrix_rf, file.path(chemin_results, "confusion_matrix_random_forest.csv"))
+
+# Séparation des données en ensembles d'entraînement et de test
+set.seed(12345)
+index <- createDataPartition(data$Categorie, p = 0.8, list = FALSE)
+trainData <- data[index,]
+testData <- data[-index,]
+
+# Liste pour stocker les résultats des modèles
+model_results <- list()
+
+# Fonction pour évaluer et comparer les modèles
+evaluate_model <- function(model, testData, modelName) {
+  predictions <- predict(model, testData)
+  conf_mat <- confusionMatrix(predictions, testData$Categorie)
+  model_results[[modelName]] <- conf_mat
+  write.csv(conf_mat$table, file.path(chemin_results, paste0("confusion_matrix_", modelName, ".csv")), row.names = FALSE)
+
+
+  rapport <- paste0("Rapport pour ", modelName, ":\n", "Accuracy: ", round(conf_mat$overall['Accuracy'], 4), "\n", "95% CI: ", paste0(round(conf_mat$overall['AccuracyLower'], 4), "-", round(conf_mat$overall['AccuracyUpper'], 4)), "\n", "Kappa: ", round(conf_mat$overall['Kappa'], 4), "\n", "Sensibilite (Recall): ", paste(round(conf_mat$byClass['Sensitivity'], 4), collapse = ", "), "\n", "Specificite: ", paste(round(conf_mat$byClass['Specificity'], 4), collapse = ", "), "\n", "Precision (Precision): ", paste(round(conf_mat$byClass['Pos Pred Value'], 4), collapse = ", "), "\n", "F1 Score: ", paste(round(conf_mat$byClass['F1'], 4), collapse = ", "), "\n")
+
+  # Sauvegarde du rapport dans un fichier
+  rapport_path <- file.path(chemin_reports, paste0("rapport_complet_", modelName, ".txt"))
+  writeLines(rapport, rapport_path)
+
+  return(conf_mat)
+}
+
+# # Modèle Random Forest
+model_rf <- randomForest(Categorie ~ ., data = trainData, ntree = 100)
+evaluate_model(model_rf, testData, "random_forest")
+saveRDS(model_rf, file.path(chemin_models, "random_forest_model.rds"))
 
 # Fin du script
