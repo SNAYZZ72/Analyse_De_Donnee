@@ -4,13 +4,27 @@ packages_to_install <- packages_needed[!(packages_needed %in% installed.packages
 if(length(packages_to_install)) install.packages(packages_to_install)
 
 # Chargement des packages
-library(rpart)
-library(rpart.plot)
-library(caret)
-library(dplyr)
+lapply(packages_needed, require, character.only = TRUE)
+
+# Définition des chemins
+chemin_data <- "data/cleaned"
+chemin_models <- "models"
+chemin_results <- "results"
+chemin_reports <- "reports"
+
+
+# Fonction pour charger des données
+load_data <- function(file_name) {
+  data_path <- file.path(chemin_data, file_name)
+  if (!file.exists(data_path)) {
+    stop("Le fichier ", data_path, " n'existe pas.")
+  }
+  data <- read_csv(data_path)
+  return(data)
+}
 
 # Charger les données des clients et des voitures
-data <- read.csv("data/cleaned/Donnees_Fusionnees.csv", header = TRUE, sep = ",", stringsAsFactors = FALSE)
+data <- load_data("Donnees_Fusionnees.csv")
 
 # Nettoyage des données
 # Par exemple, conversion de certaines variables en facteurs si nécessaire
@@ -44,6 +58,7 @@ rpart.plot(fit, extra = 102, under = TRUE, cex = 0.8, tweak = 1.2,
 
 
 
+
 # Extraction de l'importance des variables
 var_importance <- fit$variable.importance
 
@@ -60,6 +75,15 @@ predictions <- predict(fit, test_data, type = "class")
 # Évaluation de la précision
 accuracy <- sum(predictions == test_data$Categorie) / length(predictions)
 print(paste("Accuracy:", accuracy))
+
+
+# Matrice de confusion
+confusion_matrix <- table(predictions, test_data$Categorie)
+print("Matrice de Confusion:")
+print(confusion_matrix)
+# save confusion matrix
+write.csv(confusion_matrix, "results/confusion_matrix.csv")
+
 
 # Création du graphique d'importance des variables avec ggplot2
 library(ggplot2)
