@@ -1,5 +1,5 @@
 # Vérification et installation des packages nécessaires
-packages_needed <- c("dplyr", "readr")
+packages_needed <- c("dplyr", "readr", "data.table")
 new_packages <- packages_needed[!packages_needed %in% installed.packages()[,"Package"]]
 if(length(new_packages)) install.packages(new_packages)
 
@@ -29,7 +29,7 @@ clients7 <- load_data("Clients_7_sans_accents_clean.csv")
 clients12 <- load_data("Clients_12_sans_accents_clean.csv")
 
 # Vérification rapide pour s'assurer de la compatibilité des colonnes
-if (!identical(names(clients_7), names(clients_12))) {
+if (!identical(names(clients7), names(clients12))) {
   stop("Les colonnes des deux ensembles de données clients ne correspondent pas.")
 }
 
