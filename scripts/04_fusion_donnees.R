@@ -1,5 +1,5 @@
 # Vérification et installation des packages nécessaires
-packages_needed <- c("dplyr", "readr", "data.table")
+packages_needed <- c("dplyr", "readr")
 new_packages <- packages_needed[!packages_needed %in% installed.packages()[,"Package"]]
 if(length(new_packages)) install.packages(new_packages)
 
@@ -21,8 +21,7 @@ load_data <- function(file_name) {
 }
 
 # Charger les données d'immatriculations
-immatriculations <- load_data("Immatriculations_categorie.csv") %>%
-  select(immatriculation, Categorie)
+immatriculations <- load_data("Immatriculations_categorie.csv")
 
 # Charger les données clients
 clients7 <- load_data("Clients_7_sans_accents_clean.csv")
@@ -45,6 +44,7 @@ merged_data <- merge(clients, immatriculations, by = "immatriculation")
 
 # Afficher les 6 premières lignes
 head(merged_data)
+
 
 # Enregistrer les données fusionnées
 enregistrer_dataframe <- function(dataframe, file_name) {

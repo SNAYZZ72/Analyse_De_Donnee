@@ -1,0 +1,9 @@
+Rapport pour svm:
+Accuracy: 0.821
+95% CI: 0.8149-0.827
+Kappa: 0.7445
+Sensibilite (Recall): NA
+Specificite: NA
+Precision (Precision): NA
+F1 Score: NA
+

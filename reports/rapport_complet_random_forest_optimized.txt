@@ -1,0 +1,9 @@
+Rapport pour random_forest_optimized:
+Accuracy: 0.8207
+95% CI: 0.8147-0.8267
+Kappa: 0.7441
+Sensibilite (Recall): NA
+Specificite: NA
+Precision (Precision): NA
+F1 Score: NA
+

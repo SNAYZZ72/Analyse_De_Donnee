@@ -1,0 +1,9 @@
+Rapport pour random_forest_fe:
+Accuracy: 0.8213
+95% CI: 0.8152-0.8273
+Kappa: 0.745
+Sensibilite (Recall): NA
+Specificite: NA
+Precision (Precision): NA
+F1 Score: NA
+

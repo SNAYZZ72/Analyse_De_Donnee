@@ -1,5 +1,5 @@
 # Vérification et installation des packages nécessaires
-packages_needed <- c("cluster", "ggplot2", "dplyr", "rpart", "rpart.plot", "caret")
+packages_needed <- c("cluster", "ggplot2", "dplyr", "rpart", "rpart.plot", "caret", "e1071", "nnet", "data.table")
 packages_to_install <- packages_needed[!(packages_needed %in% installed.packages()[,"Package"])]
 if(length(packages_to_install)) install.packages(packages_to_install)
 
@@ -63,9 +63,6 @@ cluster_summary <- data %>%
 
 print(cluster_summary)
 
-# # Enregistrement des résultats dans un fichier CSV
-# write.csv(data_clustered, "data/resultats_clustering.csv", row.names = FALSE)
-
 # Visualisation des clusters
 visualiser_clusters <- function(data, aes_x, aes_y, titre) {
   ggplot(data, aes_string(x = aes_x, y = aes_y, color = "factor(cluster)")) +
@@ -81,7 +78,6 @@ visualiser_clusters(catalogue_pretraite$data, "puissance", "prix", "Clustering d
 # visualiser_clusters(catalogue_pretraite$data, "nbPlaces", "prix", "Clustering des voitures")
 #
 # visualiser_clusters(catalogue_pretraite$data, "nbPortes", "prix", "Clustering des voitures")
-
 
 # Construction de l'arbre de décision
 data$cluster <- as.factor(data$cluster)
@@ -121,5 +117,3 @@ ggplot(var_importance_df, aes(x = reorder(Variable, Importance), y = Importance)
        x = "Variables",
        y = "Importance") +
   theme_minimal()
-
-ggplot(data, aes(x = nbPortes, y = prix, color = factor(cluster))) + geom_point() + labs(title = "Clustering des voitures", x = "Nombre de portes", y = "Prix") + theme_minimal()

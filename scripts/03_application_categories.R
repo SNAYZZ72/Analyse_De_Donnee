@@ -33,24 +33,24 @@ immatriculations$prix <- as.numeric(as.character(immatriculations$prix))
 
 # Valeur test
 immatriculations <- rbind(immatriculations, data.table(immatriculation = "9999 AZ 99", marque = "Audi",
-nom = "test", puissance = 75, longueur = 3, nbPlaces = 7, nbPortes = 7, couleur = "gris", occasion = FALSE, prix = 30000))
+                                                       nom = "test", puissance = 75, longueur = 3, nbPlaces = 7, nbPortes = 7, couleur = "gris", occasion = FALSE, prix = 30000))
 
 
 # Fonction pour attribuer une catégorie plus efficacement
 attribuer_categorie_complexe <- function(data) {
 
-    data <- data %>%
-        mutate(
-        Categorie = case_when(
-            longueur < 3 & nbPortes >= 4 ~ "Petites Voitures Urbaines",
-            longueur < 3 & nbPortes < 4 ~ "Citadines Economiques",
-            longueur >= 3 & longueur < 4 & nbPlaces >= 6 ~ "Monospaces familiaux spacieux et abordables",
-            longueur >= 3 & longueur < 4 & nbPlaces < 6 ~ "Berlines Moyennes",
-            longueur >= 3 & longueur >= 4 & puissance < 289 ~ "Sportive et premium",
-            longueur >= 3 & longueur >= 4 & puissance >= 289 ~ "Luxueuses",
-            TRUE ~ "non classe"
-        )
-        )
+  data <- data %>%
+    mutate(
+      Categorie = case_when(
+        longueur < 3 & nbPortes >= 4 ~ "Petites Voitures Urbaines",
+        longueur < 3 & nbPortes < 4 ~ "Citadines Economiques",
+        longueur >= 3 & longueur < 4 & nbPlaces >= 6 ~ "Monospaces familiaux spacieux et abordables",
+        longueur >= 3 & longueur < 4 & nbPlaces < 6 ~ "Berlines Moyennes",
+        longueur >= 3 & longueur >= 4 & puissance < 289 ~ "Sportive et premium",
+        longueur >= 3 & longueur >= 4 & puissance >= 289 ~ "Luxueuses",
+        TRUE ~ "non classe"
+      )
+    )
 }
 
 # Appliquer la fonction étendue pour attribuer les catégories
@@ -121,5 +121,3 @@ enregistrer_dataframe <- function(dataframe, file_name) {
 # Utiliser la fonction pour enregistrer les dataframes
 # enregistrer_dataframe(catalogue, "Catalogue_categorie.csv")
 enregistrer_dataframe(immatriculations, "Immatriculations_categorie.csv")
-
-
